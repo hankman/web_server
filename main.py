@@ -18,10 +18,13 @@ SEARCH_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflo
 
 MAIN_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="height: calc(100% - 20px)">{}</div><div style="left: 0; right: 0; text-align: center"><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></body></html>'
 
+
 DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1>
 <div>
 <label type="text" for="address">输入查询地址：</label>
 <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
+<p>数据更新到：{}</p>
+<button id='search'>查询</button>
 <div>
 <iframe id="result" src="about:blank" style="height: calc(100% - 50px); width: 100%; border: none"></iframe>
 </div>
@@ -29,26 +32,27 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1>
 
 <script>
 function search_address()
-{
+{{
     var addr = document.getElementById("address").value
     document.getElementById("result").src = "/iframe_search/" + addr
-}
+}}
 
 document.getElementById("address").addEventListener(
-    "keyup", function(event) {
-    	if (event.keyCode === 13) {
+    "keyup", function(event) {{
+    	if (event.keyCode === 13) {{
             search_address();
             this.dispatchEvent(event)
-        }
-    })
+        }}
+    }})
 document.getElementById("search").addEventListener(
 	"click", search_address)
 </script>
 ''')
 
 
+TEST_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflow-y:auto; height: calc(100% - 50px)">{}</div><div style="left: 0; right: 0; text-align: center"><div>本站仅用于交流和学习，所有数据均来自<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委</a>，本站不保证数据的正确性或完整性。如有异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。</div><div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></div></body></html>'
 
-TEST_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="height: calc(100% - 20px)">{}</div><div style="left: 0; right: 0; text-align: center"><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></body></html>'
+
 
 IFRAME_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflow-y:auto; height: calc(100% - 180px)">{}</div></body></html>'
 
@@ -60,7 +64,7 @@ TEST_PAGE = TEST_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1>
 <p>数据更新到：{}</p>
 <button id='search'>查询</button>
 <div>
-<iframe id="result" src="about:blank" style="height: calc(100% - 50px); width: 100%; border: none"></iframe>
+<iframe id="result" src="about:blank" style="height: 100%; width: 100%; border: none"></iframe>
 </div>
 </div>
 
@@ -130,7 +134,8 @@ get_all_data()
 
 @app.route('/')
 def root():
-    return DEFAULT_PAGE
+    global UPDATE_DATE
+    return DEFAULT_PAGE.format(UPDATE_DATE);
 
 
 def processing_debug_request():
