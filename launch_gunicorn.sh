@@ -2,7 +2,7 @@
 
 . ~/pyenvs/pyenv1/bin/activate
 
-pushd ~/web_server/
+pushd ~/web_server/ > /dev/null
 gunicorn -c gunicorn_conf.py main:app
 
 popd
