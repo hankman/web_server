@@ -16,10 +16,10 @@ ICP_DIV = ''
 SEARCH_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflow-y:auto; height: calc(100% - 20px)">{}</div><div style="left: 0; right: 0; text-align: center"><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></body></html>'
 
 
-MAIN_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="height: calc(100% - 50px)">{}</div><div style="left: 0; right: 0; text-align: center"><div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></div></body></html>'
+MAIN_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="height: calc(100% - 50px); text-align: center;">{}</div><div style="left: 0; right: 0; text-align: center"><div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></div></body></html>'
 
 
-DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1><div style="font-size: 10px; font-style: italic"><div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。</div><div>*本站不保证数据的正确性或完整性。如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。</div></div><br/>
+DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1><div style="font-size: 10px; font-style: italic"><div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。</div><div>*本站不保证数据的正确性或完整性。如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。</div><div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div></div><br/>
 <div>
 <label type="text" for="address">输入查询地址：</label>
 <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
@@ -72,7 +72,38 @@ TEST_PAGE_TEMPLATE = MAIN_PAGE_TEMPLATE
 
 
 
-IFRAME_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflow-y:auto; height: calc(100% - 180px)">{}</div></body></html>'
+IFRAME_PAGE_TEMPLATE = '''
+<html>
+<head>
+    <style type="text/css">
+    table {{
+        border-collapse: collapse;
+        border: solid 4px;
+    }}
+
+    thead {{
+        background-color: #efefef
+    }}
+
+    th {{
+        padding: 4px 8px;
+        border: solid 2px
+    }}
+
+    thead tr:nth-child(1) {{
+        background-color: white;
+    }}
+
+    thead tr:nth-child(1) th {{
+        border: hidden;
+        border-bottom: solid 2px;
+    }}
+</style>
+</head>
+<body style="display: flex;flex-direction: column;align-items: center;">
+<div style="overflow-y:auto; height: calc(100% - 250px); overflow-x: hidden;">{}</div>
+</body>
+</html>'''
 
 
 TEST_PAGE = TEST_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1>
