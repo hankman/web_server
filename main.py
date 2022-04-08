@@ -6,6 +6,8 @@ from flask import Flask
 
 
 FAVICON_FILE = '/home/cfan/web_server/resources/favicon.ico'
+AVATAR_FILE = '/home/cfan/web_server/resources/avatar.png'
+
 
 DATA_DIR = '/home/cfan/notebooks/data'
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
@@ -205,6 +207,14 @@ def processing_favicon():
     return FVC_DATA
 
 
+with open(AVATAR_FILE, 'rb') as f:
+    AVATAR_DATA = f.read()
+
+
+def processing_avatar():
+    return AVATAR_DATA
+
+
 def processing_backend():
     with open(__file__, 'r') as f:
         return SEARCH_PAGE_TEMPLATE.format(''.join(['<pre>{}</pre>'.format(line.replace(
@@ -230,6 +240,11 @@ def test_page():
 @app.route('/favicon.ico')
 def favicon():
     return processing_favicon()
+
+
+@app.route('/apple-touch-icon.png')
+def apple_icon():
+    return processing_avatar()
 
 
 @app.route('/backend')
