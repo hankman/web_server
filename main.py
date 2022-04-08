@@ -19,7 +19,7 @@ SEARCH_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflo
 MAIN_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="height: calc(100% - 50px); text-align: center;">{}</div><div style="left: 0; right: 0; text-align: center"><div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></div></body></html>'
 
 
-DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1><div style="font-size: 10px; font-style: italic"><div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。</div><div>*本站不保证数据的正确性或完整性。如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。</div><div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div></div><br/>
+DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format('''<h1>查询感染记录</h1><div style="font-size: 10px; font-style: italic"><div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自<b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。</div><div>*本站不保证数据的正确性或完整性。如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。</div><div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div></div><br/>
 <div>
 <label type="text" for="address">输入查询地址：</label>
 <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
@@ -242,11 +242,18 @@ def query_place(place):
     return SEARCH_PAGE_TEMPLATE.format(get_result_html(place))
 
 
-EMPTY_PAGE = '<html><body><h3>错误查询，请先输入地址。</h3></body></html>'
+EMPTY_PAGE = '<html><body style="text-align: center"><h3>错误查询，请先输入地址。</h3></body></html>'
 @app.route('/iframe_search/')
 def iframe_wrong_search():
     return EMPTY_PAGE
 
+
 @app.route('/iframe_search/<place>')
 def ifram_search(place):
     return IFRAME_PAGE_TEMPLATE.format(get_result_html(place))
+
+
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 900
+    return response
