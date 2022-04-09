@@ -80,47 +80,57 @@ button.addEventListener("click", search_address)
 
 TEST_PAGE_TEMPLATE = MAIN_PAGE_TEMPLATE
 
+TABLE_HEADER = '''
+<style type="text/css">
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    table {
+        border-collapse: collapse;
+        border: solid 4px;
+    }
+
+    thead {
+        background-color: #efefef
+    }
+
+    th {
+        padding: 4px 8px;
+        border: solid 2px
+    }
+
+    thead tr:nth-child(1) {
+        background-color: white;
+    }
+
+    thead tr:nth-child(1) th {
+        border: hidden;
+        border-bottom: solid 2px;
+    }
+</style>'''
+
 
 IFRAME_PAGE_TEMPLATE = '''
 <html>
 <head>
-    <style type="text/css">
-    table {{
-        border-collapse: collapse;
-        border: solid 4px;
-    }}
-
-    thead {{
-        background-color: #efefef
-    }}
-
-    th {{
-        padding: 4px 8px;
-        border: solid 2px
-    }}
-
-    thead tr:nth-child(1) {{
-        background-color: white;
-    }}
-
-    thead tr:nth-child(1) th {{
-        border: hidden;
-        border-bottom: solid 2px;
-    }}
-</style>
+{}
 </head>
-<body style="display: flex;flex-direction: column;align-items: center;">
-<div style="overflow-y:auto; height: calc(100% - 250px); overflow-x: hidden;">{}</div>
+<body>
+<div style="overflow-y:auto;overflow-x: hidden;">{{}}</div>
 </body>
-</html>'''
+</html>'''.format(TABLE_HEADER.replace('{', '{{').replace('}', '}}'))
+print(IFRAME_PAGE_TEMPLATE)
 
 
 TEST_PAGE = TEST_PAGE_TEMPLATE.format(
-    header='',
+    header=TABLE_HEADER,
     content='''<h1>查询感染记录</h1>
 <div>
 <label type="text" for="address">输入查询地址：</label>
-<input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
+<input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="山阴路"/>
 <p>数据更新到：{}</p>
 <button id='search'>查询</button>
 <div>
@@ -199,33 +209,8 @@ def init_dist_data(all_data):
     dist_summary = dist_summary.reset_index().set_index(
         [dist_summary.index.name] + dist_summary.columns.tolist())
     return MAIN_PAGE_TEMPLATE.format(
-        header='''<head>
-    <style type="text/css">
-    table {{
-        border-collapse: collapse;
-        border: solid 4px;
-    }}
-
-    thead {{
-        background-color: #efefef
-    }}
-
-    th {{
-        padding: 4px 8px;
-        border: solid 2px
-    }}
-
-    thead tr:nth-child(1) {{
-        background-color: white;
-    }}
-
-    thead tr:nth-child(1) th {{
-        border: hidden;
-        border-bottom: solid 2px;
-    }}
-    </style>
-    </head>'''.format(),
-        content='<h1>各行政区感染小区总数</h1><div style="font-size: 10px; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div style="display: flex;flex-direction: column;align-items: center;">\n{}</div>'.format(
+        header=TABLE_HEADER,
+        content='<h1>各行政区感染小区总数</h1><div style="font-size: 1em; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div>\n{}</div>'.format(
             dist_summary.to_html()))
 
 
@@ -267,13 +252,14 @@ def processing_avatar():
 
 def processing_backend():
     with open(__file__, 'r') as f:
-        return SEARCH_PAGE_TEMPLATE.format(''.join(['<pre>{}</pre>'.format(line.replace(
-            '&', '&#38;').replace(
-            '<', '&#60;').replace(
-            '>', '&#62;').replace(
-            '"', '&#34;').replace(
-            "'", '&#39;') if line.strip() else '<br/>'
-        ) for line in f]))
+        return '<html><body>{}</body></html>'.format(
+            ''.join(['<pre>{}</pre>'.format(line.replace(
+                '&', '&#38;').replace(
+                    '<', '&#60;').replace(
+                        '>', '&#62;').replace(
+                            '"', '&#34;').replace(
+                                "'", '&#39;') if line.strip() else '<br/>'
+            ) for line in f]))
 
 
 @app.route('/debug')
@@ -303,7 +289,7 @@ def backend():
 
 @app.route('/search/<place>')
 def query_place(place):
-    return SEARCH_PAGE_TEMPLATE.format(get_result_html(place, ALL_DATA))
+    return SEARCH_PAGE_TEMPLATE.format(header=TABLE_HEADER, title='"{}"的查询结果'.format(place), content=get_result_html(place, ALL_DATA))
 
 
 EMPTY_PAGE = '<html><body style="text-align: center"><h3>错误查询，请先输入地址。</h3></body></html>'
