@@ -42,6 +42,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
             如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
         </div>
         <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
+        <div><a href="/inst.html">查看本站使用说明</a></div>
     </div><br/>
     <div>
         <label type="text" for="address">输入查询地址：</label>
