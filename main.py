@@ -15,29 +15,43 @@ DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
 
 ICP_DIV = ''
 
-SEARCH_PAGE_TEMPLATE = '<html style="overflow: hidden"><body><div style="overflow-y:auto; height: calc(100% - 20px)">{}</div><div style="left: 0; right: 0; text-align: center"><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></body></html>'
 
-
-MAIN_PAGE_TEMPLATE = '<html style="overflow: hidden">{header}<body><div style="height: calc(100% - 50px); text-align: center;">{content}</div><div style="left: 0; right: 0; text-align: center"><div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a></div></div></body></html>'
+MAIN_PAGE_TEMPLATE = '''
+<html style="overflow: hidden">
+    <head>{header}</head>
+    <body style="height: 100%;display: flex;flex-direction: column;">
+        <div style="text-align: center;flex: 1 1 auto;margin-bottom: 20px;display: flex;flex-direction: column;">{content}</div>
+        <div style="text-align: center;margin-bottom: 30px">
+            <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
+            </div>
+        </div>
+    </body>
+</html>'''
 
 
 DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     header='',
-    content='''<h1>查询感染记录</h1><div style="font-size: 10px; font-style: italic">
-    <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
-    <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
-    </div><div>*本站不保证数据的正确性或完整性。
-    如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
-    </div><div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
+    content='''
+<div>
+    <h1>查询感染记录</h1>
+    <div style="font-size: 0.75em; font-style: italic">
+        <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
+            <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
+        </div>
+        <div>*本站不保证数据的正确性或完整性。
+            如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
+        </div>
+        <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
     </div><br/>
-<div>
-<label type="text" for="address">输入查询地址：</label>
-<input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
-<p>数据更新到：{}</p>
-<button id='search'>查询</button>
-<div>
-<iframe id="result" src="about:blank" style="height: 100%; width: 100%; border: none"></iframe>
+    <div>
+        <label type="text" for="address">输入查询地址：</label>
+        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="龙阳路"/>
+        <p>数据更新到：{}</p>
+        <button id='search'>查询</button>
+    </div>
 </div>
+<div style="flex: 1 1 auto;display: flex;margin-top: 10px">
+    <iframe id="result" src="about:blank" style="flex: 1 1 auto; border: none"></iframe>
 </div>
 
 <script>
@@ -113,6 +127,9 @@ TABLE_HEADER = '''
 </style>'''
 
 
+TABLE_HEADER_TEMP_STR = TABLE_HEADER.replace('{', '{{').replace('}', '}}')
+
+
 IFRAME_PAGE_TEMPLATE = '''
 <html>
 <head>
@@ -121,8 +138,7 @@ IFRAME_PAGE_TEMPLATE = '''
 <body>
 <div style="overflow-y:auto;overflow-x: hidden;">{{}}</div>
 </body>
-</html>'''.format(TABLE_HEADER.replace('{', '{{').replace('}', '}}'))
-print(IFRAME_PAGE_TEMPLATE)
+</html>'''.format(TABLE_HEADER_TEMP_STR)
 
 
 TEST_PAGE = TEST_PAGE_TEMPLATE.format(
@@ -155,6 +171,29 @@ document.getElementById("address").addEventListener(
 document.getElementById("search").addEventListener(
 	"click", search_address)
 </script>
+''')
+
+
+SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
+    header=TABLE_HEADER_TEMP_STR,
+    content='''
+<div>
+    <h1>"{title}"的查询结果</h1>
+    <div style="font-size: 0.75em; font-style: italic">
+        <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
+            <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
+        </div>
+        <div>*本站不保证数据的正确性或完整性。
+            如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
+        </div>
+        <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
+    </div><br/>
+</div>
+<div style="flex: 1 1 auto;margin-top: 10px;display: flex;flex-direction: column;align-items:center;height: 0">
+    <div style="overflow-y: auto;overflow-x: hidden;">
+        {content}
+    </div>
+</div>
 ''')
 
 
@@ -289,7 +328,7 @@ def backend():
 
 @app.route('/search/<place>')
 def query_place(place):
-    return SEARCH_PAGE_TEMPLATE.format(header=TABLE_HEADER, title='"{}"的查询结果'.format(place), content=get_result_html(place, ALL_DATA))
+    return SEARCH_PAGE.format(title=place, content=get_result_html(place, ALL_DATA))
 
 
 EMPTY_PAGE = '<html><body style="text-align: center"><h3>错误查询，请先输入地址。</h3></body></html>'
