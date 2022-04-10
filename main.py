@@ -133,6 +133,45 @@ TABLE_HEADER = '''
         border: hidden;
         border-bottom: solid 0.1rem;
     }
+
+    thead tr th:nth-last-child(1) {
+        white-space: nowrap;
+    }
+</style>'''
+
+
+DIST_TABLE_HEADER = '''
+<style type="text/css">
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 1rem;
+    }
+
+    table {
+        border-collapse: collapse;
+        border: solid 0.2rem;
+    }
+
+    thead {
+        background-color: #efefef
+    }
+
+    th {
+        padding: 0.1rem 0.2rem;
+        border: solid 0.1rem;
+        font-size: 1rem;
+    }
+
+    thead tr:nth-child(1) {
+        background-color: white;
+    }
+
+    thead tr:nth-child(1) th {
+        border: hidden;
+        border-bottom: solid 0.1rem;
+    }
 </style>'''
 
 
@@ -232,7 +271,7 @@ def init_dist_data(all_data):
     dist_summary = dist_summary.reset_index().set_index(
         [dist_summary.index.name] + dist_summary.columns.tolist())
     return MAIN_PAGE_TEMPLATE.format(
-        header=TABLE_HEADER,
+        header=DIST_TABLE_HEADER,
         content='<h1>各行政区感染小区总数</h1><div style="font-size: 1em; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div style="overflow-y: auto;flex: 1 1 auto;height: 0">\n{}</div>'.format(
             dist_summary.to_html()))
 
