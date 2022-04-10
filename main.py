@@ -18,10 +18,13 @@ ICP_DIV = ''
 
 MAIN_PAGE_TEMPLATE = '''
 <html style="overflow: hidden">
-    <head>{header}</head>
-    <body style="height: 100%;display: flex;flex-direction: column;">
-        <div style="text-align: center;flex: 1 1 auto;margin-bottom: 20px;display: flex;flex-direction: column;">{content}</div>
-        <div style="text-align: center;margin-bottom: 30px">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        {header}</head>
+    <body style="height: 100%;display: flex;flex-direction: column;font-size: 1rem;margin: 1rem;">
+        <div style="text-align: center;flex: 1 1 auto;margin-bottom: 0.75rem;display: flex;flex-direction: column;">{content}</div>
+        <div style="text-align: center;margin-bottom: 1rem;font-size: 0.75rem">
             <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
             </div>
         </div>
@@ -34,7 +37,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     content='''
 <div>
     <h1>查询感染记录</h1>
-    <div style="font-size: 0.75em; font-style: italic">
+    <div style="font-size: 0.5em; font-style: italic">
         <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
             <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
         </div>
@@ -51,7 +54,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
         <button id='search'>查询</button>
     </div>
 </div>
-<div style="flex: 1 1 auto;display: flex;margin-top: 10px">
+<div style="flex: 1 1 auto;display: flex;margin-top: 0.5rem">
     <iframe id="result" src="about:blank" style="flex: 1 1 auto; border: none"></iframe>
 </div>
 
@@ -101,11 +104,12 @@ TABLE_HEADER = '''
         display: flex;
         flex-direction: column;
         align-items: center;
+        font-size: 1rem;
     }
 
     table {
         border-collapse: collapse;
-        border: solid 4px;
+        border: solid 0.2rem;
     }
 
     thead {
@@ -113,8 +117,9 @@ TABLE_HEADER = '''
     }
 
     th {
-        padding: 4px 8px;
-        border: solid 2px
+        padding: 0.1rem 0.2rem;
+        border: solid 0.1rem;
+        font-size: 1rem;
     }
 
     thead tr:nth-child(1) {
@@ -123,7 +128,7 @@ TABLE_HEADER = '''
 
     thead tr:nth-child(1) th {
         border: hidden;
-        border-bottom: solid 2px;
+        border-bottom: solid 0.1rem;
     }
 </style>'''
 
@@ -134,9 +139,11 @@ TABLE_HEADER_TEMP_STR = TABLE_HEADER.replace('{', '{{').replace('}', '}}')
 IFRAME_PAGE_TEMPLATE = '''
 <html>
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 {}
 </head>
-<body>
+<body style="font-size: 1rem">
 <div style="overflow-y:auto;overflow-x: hidden;">{{}}</div>
 </body>
 </html>'''.format(TABLE_HEADER_TEMP_STR)
@@ -180,7 +187,7 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     content='''
 <div>
     <h1>"{title}"的查询结果</h1>
-    <div style="font-size: 0.75em; font-style: italic">
+    <div style="font-size: 0.5em; font-style: italic">
         <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
             <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
         </div>
@@ -190,7 +197,7 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
         <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
     </div><br/>
 </div>
-<div style="flex: 1 1 auto;margin-top: 10px;display: flex;flex-direction: column;align-items:center;height: 0">
+<div style="flex: 1 1 auto;margin-top: 0.5rem;display: flex;flex-direction: column;align-items:center;height: 0">
     <div style="overflow-y: auto;overflow-x: hidden;">
         {content}
     </div>
@@ -250,7 +257,7 @@ def init_dist_data(all_data):
         [dist_summary.index.name] + dist_summary.columns.tolist())
     return MAIN_PAGE_TEMPLATE.format(
         header=TABLE_HEADER,
-        content='<h1>各行政区感染小区总数</h1><div style="font-size: 1em; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div>\n{}</div>'.format(
+        content='<h1>各行政区感染小区总数</h1><div style="font-size: 1em; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div style="overflow-y: auto;flex: 1 1 auto;height: 0">\n{}</div>'.format(
             dist_summary.to_html()))
 
 
@@ -332,7 +339,7 @@ def query_place(place):
     return SEARCH_PAGE.format(title=place, content=get_result_html(place, ALL_DATA))
 
 
-EMPTY_PAGE = '<html><body style="text-align: center"><h3>错误查询，请先输入地址。</h3></body></html>'
+EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
 @app.route('/iframe_search/')
 def iframe_wrong_search():
     return EMPTY_PAGE
