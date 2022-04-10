@@ -46,7 +46,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     </div><br/>
     <div>
         <label type="text" for="address">输入查询地址：</label>
-        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="山阴路"/>
+        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路"/>
         <p>数据更新到：{}</p>
         <button id='search'>查询</button>
     </div>
@@ -147,7 +147,7 @@ TEST_PAGE = TEST_PAGE_TEMPLATE.format(
     content='''<h1>查询感染记录</h1>
 <div>
 <label type="text" for="address">输入查询地址：</label>
-<input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="山阴路"/>
+<input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例:山阴路"/>
 <p>数据更新到：{}</p>
 <button id='search'>查询</button>
 <div>
