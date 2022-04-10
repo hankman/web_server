@@ -186,7 +186,7 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     header=TABLE_HEADER_TEMP_STR,
     content='''
 <div>
-    <h1>"{title}"的查询结果</h1>
+    <h1>"{{title}}"的查询结果</h1>
     <div style="font-size: 0.5em; font-style: italic">
         <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
             <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
@@ -198,11 +198,12 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     </div><br/>
 </div>
 <div style="flex: 1 1 auto;margin-top: 0.5rem;display: flex;flex-direction: column;align-items:center;height: 0">
+    <p>数据更新到：{}</p>
     <div style="overflow-y: auto;overflow-x: hidden;">
-        {content}
+        {{content}}
     </div>
 </div>
-''')
+'''.format(UPDATE_DATE))
 
 
 app = Flask(__name__)
