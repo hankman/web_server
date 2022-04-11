@@ -8,6 +8,7 @@ from flask import Flask
 RESOURCE_DIR = '/home/cfan/web_server/resources'
 DATA_DIR = '/home/cfan/notebooks/data'
 
+
 # RESOURCE_DIR = '/home/fan/code/py/web_server/resources'
 # DATA_DIR = '/home/fan/code/py/notebooks/data'
 
@@ -17,11 +18,8 @@ AVATAR_FILE = os.path.join(RESOURCE_DIR, 'avatar.png')
 LOGO_FILE = os.path.join(RESOURCE_DIR, 'logo.jpg')
 
 
-
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
-
-ICP_DIV = ''
 
 
 MAIN_PAGE_TEMPLATE = '''
@@ -51,23 +49,18 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
             </a>查询感染记录
         </h1>
     </div>
-    <div style="font-size: 0.5em; font-style: italic">
-        <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
-            <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
-        </div>
-        <div>*本站不保证数据的正确性或完整性。
-            如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
-        </div>
-        <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
-        <div><a href="/inst.html">本站使用说明</a><a href="/dist" style="margin-left: 1rem">小区统计数据</a></div>
-    </div><br/>
-    <div>
+    <div style="font-size: 0.75em; font-style: italic">
+        <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a></div>
+    </div>
+    <div style="margin-top: 0.5rem">
         <label type="text" for="address">输入查询地址：</label>
         <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路"/>
-        <div style="margin: 0.5rem">数据更新到：{}</div>
+        <div>
+            <div style="margin: 0.5rem">数据更新到：<a href="/dist">{}</a></div>
+        </div>
         <div style="display: inline-block;position: relative">
-            <button id="search" style="position: absolute;left: 50%;transform: translateX(-50%);width: 8rem">查询</button>
-            <button id="long_search" style="position: relative;left: 6rem">常驻</button>
+            <button id="search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: absolute;left: 50%;transform: translateX(-50%);width: 8rem">查询</button>
+            <button id="long_search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: relative;left: 8rem">收藏页</button>
         </div>
     </div>
 </div>
@@ -81,6 +74,7 @@ var allow_query = true
 
 const button = document.getElementById("search");
 const long_search_button = document.getElementById("long_search");
+const addr_input = document.getElementById("address")
 
 const disable_query = () => {{
     allow_query = false
@@ -92,11 +86,41 @@ const enable_query = () => {{
     button.disabled = false;
 }};
 
+var flash_cnt = 0;
+var curr_timer = null;
+
+const change_input_bg = () => {{
+    if (flash_cnt === 0) {{
+        curr_timer = null;
+        return
+    }}
+    if (flash_cnt % 2 === 0) {{
+        addr_input.style.backgroundColor = "red"
+    }}
+    else {{
+        addr_input.style.backgroundColor = "white"
+    }}
+    flash_cnt -= 1;
+    curr_timer = setTimeout(change_input_bg, 100)
+}}
+
+const flash_input = () => {{
+    if (curr_timer != null) {{
+        return
+    }}
+    flash_cnt = 6;
+    change_input_bg();
+}}
+
+
 function search_address()
 {{
     if (!allow_query) return;
-    var addr = document.getElementById("address").value
-    document.getElementById("result").src = "/iframe_search/" + addr
+    if (addr_input.value == null || addr_input.value == "") {{
+        flash_input();
+        return;
+    }}
+    document.getElementById("result").src = "/iframe_search/" + addr_input.value
     disable_query()
     setTimeout(enable_query, 3000)
 }}
@@ -111,7 +135,11 @@ document.getElementById("address").addEventListener(
 button.addEventListener("click", search_address)
 
 long_search_button.addEventListener("click", function() {{
-        var addr = document.getElementById("address").value
+        var addr = addr_input.value
+        if (addr_input.value == null || addr_input.value == "") {{
+            flash_input();
+            return;
+        }}
         window.location.pathname = ("/search/" + addr)
     }})
 
@@ -287,10 +315,10 @@ def init_dist_data(all_data):
         content='''
         <a href="/"><img src="/img/logo.jpg" alt="logo" style="height: 4rem;"></a>
         <h1 style="margin: 0">各行政区感染小区总数</h1>
-        <div style="font-size: 1em; font-style: italic;border-bottom: solid 0.1rem;padding: 0.3rem;margin-bottom:0.3rem;">
-            <div>*该数据准确率较低，请以官方数据为准</div>
+        <div style="font-size: 0.75em; font-style: italic">
+            <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a></div>
         </div>
-        <div style="overflow-y: auto;overflow-x: hidden;flex: 1 1 auto;height: 0;align-items: center;display: flex;flex-direction: column;">\n{}</div>'''.format(
+        <div style="overflow-y: auto;overflow-x: hidden;flex: 1 1 auto;height: 0;align-items: center;display: flex;flex-direction: column;margin-top: 1rem">\n{}</div>'''.format(
             dist_summary.to_html()))
 
 
@@ -304,17 +332,11 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     content='''
 <div style="border-bottom: solid 0.1rem;padding: 0.3rem">
     <a href="/"><img src="/img/logo.jpg" alt="logo" style="height: 4rem;"></a>
-    <h1 style="margin-top: 0">"{{title}}"的查询结果</h1>
-    <div style="font-size: 0.5em; font-style: italic">
-        <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
-            <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
-        </div>
-        <div>*本站不保证数据的正确性或完整性。
-            如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
-        </div>
-        <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
+    <h1 style="margin: 0">"{{title}}"的查询结果</h1>
+    <div style="font-size: 0.75em; font-style: italic">
+        <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a></div>
     </div>
-    <div style="margin: 0.1rem;">数据更新到：{}</div>
+    <div style="margin: 0.8rem;">数据更新至：<a href="/dist">{}</a></div>
 </div>
 <div style="flex: 1 1 auto;margin-top: 0.5rem;display: flex;flex-direction: column;align-items:center;height: 0">
     <div style="overflow-y: auto;overflow-x: hidden;">
