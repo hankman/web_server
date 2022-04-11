@@ -6,14 +6,17 @@ from flask import Flask
 
 
 RESOURCE_DIR = '/home/cfan/web_server/resources'
+DATA_DIR = '/home/cfan/notebooks/data'
+
 # RESOURCE_DIR = '/home/fan/code/py/web_server/resources'
+# DATA_DIR = '/home/fan/code/py/notebooks/data'
+
+
 FAVICON_FILE = os.path.join(RESOURCE_DIR, 'favicon.ico')
 AVATAR_FILE = os.path.join(RESOURCE_DIR, 'avatar.png')
 LOGO_FILE = os.path.join(RESOURCE_DIR, 'logo.jpg')
 
 
-DATA_DIR = '/home/cfan/notebooks/data'
-# DATA_DIR = '/home/fan/code/py/notebooks/data'
 
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
@@ -29,7 +32,7 @@ MAIN_PAGE_TEMPLATE = '''
         {header}</head>
     <body style="height: 100%;display: flex;flex-direction: column;font-size: 1rem;margin: 1rem;">
         <div style="text-align: center;flex: 1 1 auto;margin-bottom: 0.75rem;display: flex;flex-direction: column;width: 100%;">{content}</div>
-        <div style="text-align: center;margin-bottom: 1rem;font-size: 0.75rem;border-top: solid 0.1rem;width: 100%;">
+        <div style="text-align: center;margin-bottom: 1.5rem;font-size: 0.75rem;border-top: solid 0.1rem;width: 100%;">
             <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
             </div>
         </div>
@@ -42,7 +45,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     content='''
 <div style="border-bottom: solid 0.1rem;padding: 0.3rem">
     <div style="text-align: center;">
-        <h1 style="display: inline-block;position: relative">
+        <h1 style="display: inline-block;position: relative;margin: 0.8rem">
             <a href="/" style="position: absolute;top: -1rem;left: -5rem">
                 <img src="/img/logo.jpg" alt="logo" style="height: 4rem;">
             </a>查询感染记录
@@ -56,13 +59,16 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
             如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
         </div>
         <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
-        <div><a href="/inst.html">查看本站使用说明</a></div>
+        <div><a href="/inst.html">本站使用说明</a><a href="/dist" style="margin-left: 1rem">小区统计数据</a></div>
     </div><br/>
     <div>
         <label type="text" for="address">输入查询地址：</label>
         <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路"/>
         <div style="margin: 0.5rem">数据更新到：{}</div>
-        <button id='search'>查询</button>
+        <div style="display: inline-block;position: relative">
+            <button id="search" style="position: absolute;left: 50%;transform: translateX(-50%);width: 8rem">查询</button>
+            <button id="long_search" style="position: relative;left: 6rem">常驻</button>
+        </div>
     </div>
 </div>
 <div style="flex: 1 1 auto;display: flex;margin-top: 0.5rem">
@@ -74,6 +80,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
 var allow_query = true
 
 const button = document.getElementById("search");
+const long_search_button = document.getElementById("long_search");
 
 const disable_query = () => {{
     allow_query = false
@@ -102,6 +109,11 @@ document.getElementById("address").addEventListener(
         }}
     }})
 button.addEventListener("click", search_address)
+
+long_search_button.addEventListener("click", function() {{
+        var addr = document.getElementById("address").value
+        window.location.pathname = ("/search/" + addr)
+    }})
 
 </script>
 ''')
@@ -160,25 +172,17 @@ DIST_TABLE_HEADER = '''
     table {
         border-collapse: collapse;
         border: solid 0.2rem;
+        background-color: honeydew;
     }
 
-    thead {
-        background-color: #efefef
-    }
-
-    th {
+    td, th {
         padding: 0.1rem 0.2rem;
-        border: solid 0.1rem;
+        border-top: solid 0.1rem;
         font-size: 1rem;
     }
 
-    thead tr:nth-child(1) {
-        background-color: white;
-    }
-
-    thead tr:nth-child(1) th {
-        border: hidden;
-        border-bottom: solid 0.1rem;
+    tr th:nth-child(1) {
+        border-right: solid 0.1rem;
     }
 </style>'''
 
@@ -275,9 +279,9 @@ def init_dist_data(all_data):
     ].groupby(['Dist', 'Date']).size().rename('Counts').sort_index(
     ).reset_index().set_index(['Dist', 'Date']).unstack()
     dist_summary.columns = [d[1].strftime('%Y-%m-%d') for d in dist_summary.columns]
-    dist_summary.index.name = '行政区'
-    dist_summary = dist_summary.reset_index().set_index(
-        [dist_summary.index.name] + dist_summary.columns.tolist())
+    dist_summary.index.name = None
+    dist_summary = dist_summary.style.background_gradient(axis=None, cmap='YlOrRd')
+
     return MAIN_PAGE_TEMPLATE.format(
         header=DIST_TABLE_HEADER,
         content='''
