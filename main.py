@@ -5,13 +5,15 @@ import pandas as pd
 from flask import Flask
 
 
-FAVICON_FILE = '/home/cfan/web_server/resources/favicon.ico'
-AVATAR_FILE = '/home/cfan/web_server/resources/avatar.png'
-#FAVICON_FILE = '/home/fan/code/py/web_server/resources/favicon.ico'
-#AVATAR_FILE = '/home/fan/code/py/web_server/resources/avatar.png'
+RESOURCE_DIR = '/home/cfan/web_server/resources'
+# RESOURCE_DIR = '/home/fan/code/py/web_server/resources'
+FAVICON_FILE = os.path.join(RESOURCE_DIR, 'favicon.ico')
+AVATAR_FILE = os.path.join(RESOURCE_DIR, 'avatar.png')
+LOGO_FILE = os.path.join(RESOURCE_DIR, 'logo.jpg')
+
 
 DATA_DIR = '/home/cfan/notebooks/data'
-#DATA_DIR = '/home/fan/code/py/notebooks/data'
+# DATA_DIR = '/home/fan/code/py/notebooks/data'
 
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
@@ -26,8 +28,8 @@ MAIN_PAGE_TEMPLATE = '''
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         {header}</head>
     <body style="height: 100%;display: flex;flex-direction: column;font-size: 1rem;margin: 1rem;">
-        <div style="text-align: center;flex: 1 1 auto;margin-bottom: 0.75rem;display: flex;flex-direction: column;">{content}</div>
-        <div style="text-align: center;margin-bottom: 1rem;font-size: 0.75rem">
+        <div style="text-align: center;flex: 1 1 auto;margin-bottom: 0.75rem;display: flex;flex-direction: column;width: 100%;">{content}</div>
+        <div style="text-align: center;margin-bottom: 1rem;font-size: 0.75rem;border-top: solid 0.1rem;width: 100%;">
             <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
             </div>
         </div>
@@ -38,8 +40,14 @@ MAIN_PAGE_TEMPLATE = '''
 DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     header='',
     content='''
-<div>
-    <h1>查询感染记录</h1>
+<div style="border-bottom: solid 0.1rem;padding: 0.3rem">
+    <div style="text-align: center;">
+        <h1 style="display: inline-block;position: relative">
+            <a href="/" style="position: absolute;top: -1rem;left: -5rem">
+                <img src="/img/logo.jpg" alt="logo" style="height: 4rem;">
+            </a>查询感染记录
+        </h1>
+    </div>
     <div style="font-size: 0.5em; font-style: italic">
         <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
             <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
@@ -53,7 +61,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     <div>
         <label type="text" for="address">输入查询地址：</label>
         <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路"/>
-        <p>数据更新到：{}</p>
+        <div style="margin: 0.5rem">数据更新到：{}</div>
         <button id='search'>查询</button>
     </div>
 </div>
@@ -272,7 +280,13 @@ def init_dist_data(all_data):
         [dist_summary.index.name] + dist_summary.columns.tolist())
     return MAIN_PAGE_TEMPLATE.format(
         header=DIST_TABLE_HEADER,
-        content='<h1>各行政区感染小区总数</h1><div style="font-size: 1em; font-style: italic"><div>*该数据准确率较低，请以官方数据为准</div></div><div style="overflow-y: auto;flex: 1 1 auto;height: 0">\n{}</div>'.format(
+        content='''
+        <a href="/"><img src="/img/logo.jpg" alt="logo" style="height: 4rem;"></a>
+        <h1 style="margin: 0">各行政区感染小区总数</h1>
+        <div style="font-size: 1em; font-style: italic;border-bottom: solid 0.1rem;padding: 0.3rem;margin-bottom:0.3rem;">
+            <div>*该数据准确率较低，请以官方数据为准</div>
+        </div>
+        <div style="overflow-y: auto;overflow-x: hidden;flex: 1 1 auto;height: 0;align-items: center;display: flex;flex-direction: column;">\n{}</div>'''.format(
             dist_summary.to_html()))
 
 
@@ -284,8 +298,9 @@ DIST_SUMMARY_PAGE = init_dist_data(ALL_DATA)
 SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     header=TABLE_HEADER_TEMP_STR,
     content='''
-<div>
-    <h1>"{{title}}"的查询结果</h1>
+<div style="border-bottom: solid 0.1rem;padding: 0.3rem">
+    <a href="/"><img src="/img/logo.jpg" alt="logo" style="height: 4rem;"></a>
+    <h1 style="margin-top: 0">"{{title}}"的查询结果</h1>
     <div style="font-size: 0.5em; font-style: italic">
         <div>*本站非官方网站,仅用于交流和学习。本站数据均抓取自
             <b>上海发布公众号</b>和<a href="https://wsjkw.sh.gov.cn/xwfb/index.html">上海卫健委网站</a>。
@@ -294,10 +309,10 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
             如有任何问题或异议请联系<a href="mailto:c-fan@outlook.com">开发者</a>。
         </div>
         <div style="color: red">*“查询日期加14天就可解封”为谣言，具体解封政策请咨询当地防疫机构。</div>
-    </div><br/>
+    </div>
+    <div style="margin: 0.1rem;">数据更新到：{}</div>
 </div>
 <div style="flex: 1 1 auto;margin-top: 0.5rem;display: flex;flex-direction: column;align-items:center;height: 0">
-    <div style="margin-top: 0.1rem;">数据更新到：{}</div>
     <div style="overflow-y: auto;overflow-x: hidden;">
         {{content}}
     </div>
@@ -330,6 +345,10 @@ def processing_favicon():
 
 with open(AVATAR_FILE, 'rb') as f:
     AVATAR_DATA = f.read()
+
+
+with open(LOGO_FILE, 'rb') as f:
+    LOGO_DATA = f.read()
 
 
 def processing_avatar():
@@ -387,6 +406,11 @@ def iframe_wrong_search():
 @app.route('/iframe_search/<place>')
 def ifram_search(place):
     return IFRAME_PAGE_TEMPLATE.format(get_result_html(place, ALL_DATA))
+
+
+@app.route('/img/logo.jpg')
+def logo_img():
+    return LOGO_DATA;
 
 
 @app.after_request
