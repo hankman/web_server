@@ -163,6 +163,8 @@ TABLE_HEADER = '''
     table {
         border-collapse: collapse;
         border: solid 0.2rem;
+        width: 100%;
+        max-width: 35rem;
     }
 
     thead {
@@ -228,7 +230,7 @@ IFRAME_PAGE_TEMPLATE = '''
 {}
 </head>
 <body style="font-size: 1rem">
-<div style="overflow-y:auto;overflow-x: hidden;">{{}}</div>
+<div style="overflow-y:auto;overflow-x: hidden;width: 100%;display: flex;flex-direction: column;align-items: center">{{}}</div>
 </body>
 </html>'''.format(TABLE_HEADER_TEMP_STR)
 
@@ -398,7 +400,7 @@ SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
     <div style="margin: 0.8rem;">数据更新至：<a href="/dist">{}</a></div>
 </div>
 <div style="flex: 1 1 auto;margin-top: 0.5rem;display: flex;flex-direction: column;align-items:center;height: 0">
-    <div style="overflow-y: auto;overflow-x: hidden;">
+    <div style="overflow-y: auto;overflow-x: hidden;width: 100%;display: flex;flex-direction: column;align-items: center">
         {{content}}
     </div>
 </div>
