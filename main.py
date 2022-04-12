@@ -2,6 +2,7 @@
 import os
 import pickle
 import pandas as pd
+import datetime as dt
 from flask import Flask
 
 
@@ -293,12 +294,68 @@ def get_result_data(place, all_data):
     return data
 
 
-def get_result_html(place, all_data):
+def initial_passed_days(all_data):
+    n = dt.datetime.combine(dt.date.today(), dt.time())
+    return (n - all_data.groupby(['Dist', 'Community']).Date.max()).dt.days
+
+
+W, R, O, G = 'white', '#ffdddd', '#ffdfbd', '#c0ffc0'
+
+def get_format(d):
+    if d >= 14:
+        return f'background-color: {G}'
+
+    color_band = [f'{W} 0%']
+    curr_p = d * 7
+
+    def append_cell(color_band, color, curr_p):
+        color_band.append(f'{W} {curr_p}%')
+        color_band.append(f'{color} {curr_p}%')
+        curr_p += 6
+        color_band.append(f'{color} {curr_p}%')
+        color_band.append(f'{W} {curr_p}%')
+        return curr_p + 1
+
+    for i in range(7 - d):
+        curr_p = append_cell(color_band, R, curr_p)
+
+    for i in range(min(7, 14 - d)):
+        curr_p = append_cell(color_band, O, curr_p)
+
+    color_band.append(f'{W} {curr_p}%')
+    color_band.append(f'{G} {curr_p}%')
+
+    return f"background: linear-gradient(90deg, {','.join(color_band)});"
+
+
+class formatter:
+    def __init__(self, tt):
+        self.tt = tt
+        self.app_cnt = 0
+        self.Dist = []
+
+    def __call__(self, s):
+        self.app_cnt += 1
+        if self.app_cnt == 2:
+            ret = []
+            for dist, community in zip(self.Dist, s):
+                d = self.tt.loc[dist, community]
+                ret.append(get_format(d))
+            return pd.Series(ret, index=s.index)
+        elif self.app_cnt == 1:
+            self.Dist = s
+
+        return pd.Series('', index=s.index)
+
+
+def get_result_html(place, all_data, passed_days):
     data = get_result_data(place, all_data)
     if data.shape[0] == 0:
         content = '<span>(无感染记录或未收录地址。注意，输入地址请勿包含行政区。)</span>'
     else:
-        content = data.to_html()
+        fmt = formatter(passed_days)
+        content = data.style.apply_index(fmt).format_index(
+            formatter={'感染报告日期': lambda x: x.strftime('%Y-%m-%d')}).to_html()
     return content
 
 
@@ -324,6 +381,7 @@ def init_dist_data(all_data):
 
 
 ALL_DATA, UPDATE_DATE = init_all_data()
+PASSED_DAYS = initial_passed_days(ALL_DATA)
 ROOT_PAGE = DEFAULT_PAGE.format(UPDATE_DATE)
 DIST_SUMMARY_PAGE = init_dist_data(ALL_DATA)
 
@@ -421,7 +479,7 @@ def backend():
 
 @app.route('/search/<place>')
 def query_place(place):
-    return SEARCH_PAGE.format(title=place, content=get_result_html(place, ALL_DATA))
+    return SEARCH_PAGE.format(title=place, content=get_result_html(place, ALL_DATA, PASSED_DAYS))
 
 
 EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
@@ -432,7 +490,7 @@ def iframe_wrong_search():
 
 @app.route('/iframe_search/<place>')
 def ifram_search(place):
-    return IFRAME_PAGE_TEMPLATE.format(get_result_html(place, ALL_DATA))
+    return IFRAME_PAGE_TEMPLATE.format(get_result_html(place, ALL_DATA, PASSED_DAYS))
 
 
 @app.route('/img/logo.jpg')
