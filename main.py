@@ -8,7 +8,6 @@ from flask import Flask
 RESOURCE_DIR = '/home/cfan/web_server/resources'
 DATA_DIR = '/home/cfan/notebooks/data'
 
-
 # RESOURCE_DIR = '/home/fan/code/py/web_server/resources'
 # DATA_DIR = '/home/fan/code/py/notebooks/data'
 
@@ -54,13 +53,13 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     </div>
     <div style="margin-top: 0.5rem">
         <label type="text" for="address">输入查询地址：</label>
-        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路"/>
+        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路" style="outline: none !important;box-shadow: 0 0 0.3rem black;"/>
         <div>
             <div style="margin: 0.5rem">数据更新到：<a href="/dist">{}</a></div>
         </div>
         <div style="display: inline-block;position: relative">
-            <button id="search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: absolute;left: 50%;transform: translateX(-50%);width: 8rem">查询</button>
-            <button id="long_search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: relative;left: 8rem">收藏页</button>
+            <button id="search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: absolute;left: 50%;transform: translateX(-50%);width: 8rem;color: black">查询</button>
+            <button id="long_search" style="height: 2rem;background-color: white;border-radius: 0.8rem;border: solid 0.3rem;position: relative;left: 8rem;color: black">收藏页</button>
         </div>
     </div>
 </div>
