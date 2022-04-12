@@ -78,11 +78,13 @@ const addr_input = document.getElementById("address")
 const disable_query = () => {{
     allow_query = false
     button.disabled = true;
+    button.style.backgroundColor = "#cfcfcf"
 }};
 
 const enable_query = () => {{
     allow_query = true
     button.disabled = false;
+    button.style.backgroundColor = "white"
 }};
 
 var flash_cnt = 0;
