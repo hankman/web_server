@@ -53,7 +53,7 @@ DEFAULT_PAGE = MAIN_PAGE_TEMPLATE.format(
     </div>
     <div style="margin-top: 0.5rem">
         <label type="text" for="address">输入查询地址：</label>
-        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路" style="outline: none !important;box-shadow: 0 0 0.3rem black;"/>
+        <input id="address" name="address" required autocomplete="address" autofocus type="text" placeholder="例：山阴路" style="outline: none !important;"/>
         <div>
             <div style="margin: 0.5rem">数据更新到：<a href="/dist">{}</a></div>
         </div>
