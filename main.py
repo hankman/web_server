@@ -22,6 +22,10 @@ DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
 
 
+W, R, O, G = 'white', '#ffdddd', '#ffdfbd', '#c0ffc0'
+FR, FO, FG = '#ff8d8d', '#eeab65', '#4adc4a'
+
+
 MAIN_PAGE_TEMPLATE = '''
 <html style="overflow: hidden">
     <head>
@@ -131,7 +135,6 @@ document.getElementById("address").addEventListener(
     "keyup", function(event) {{
     	if (event.keyCode === 13 && allow_query) {{
             search_address();
-            this.dispatchEvent(event)
         }}
     }})
 button.addEventListener("click", search_address)
@@ -151,71 +154,100 @@ long_search_button.addEventListener("click", function() {{
 
 TEST_PAGE_TEMPLATE = MAIN_PAGE_TEMPLATE
 
-TABLE_HEADER = '''
+
+TABLE_REMAIN_STYLE = f'''
+    .curr_status {{
+        font-size: 0.7rem;
+        font-weight: 300;
+    }}
+
+    .fkq {{
+        color: {FR}
+    }}
+
+    .gkq {{
+        color: {FO}
+    }}
+
+    .ffq {{
+        color: {FG}
+    }}
+'''
+
+
+TABLE_HEADER = f'''
 <style type="text/css">
-    body {
+    body {{
         display: flex;
         flex-direction: column;
         align-items: center;
         font-size: 1rem;
-    }
+    }}
 
-    table {
+    table {{
         border-collapse: collapse;
         border: solid 0.2rem;
         width: 100%;
         max-width: 35rem;
-    }
+    }}
 
-    thead {
+    thead {{
         background-color: #efefef
-    }
+    }}
 
-    th {
+    th {{
         padding: 0.1rem 0.2rem;
         border: solid 0.1rem;
         font-size: 1rem;
-    }
+    }}
 
-    thead tr:nth-child(1) {
+    thead tr:nth-child(1) {{
         background-color: white;
-    }
+    }}
 
-    thead tr:nth-child(1) th {
+    thead tr:nth-child(1) th {{
         border: hidden;
         border-bottom: solid 0.1rem;
-    }
+    }}
 
-    thead tr th:nth-last-child(1) {
+    tbody tr th:nth-last-child(1) {{
         white-space: nowrap;
-    }
+    }}
+
+    tbody tr th:nth-last-child(2) {{
+        white-space: nowrap;
+    }}
+
+    {TABLE_REMAIN_STYLE}
 </style>'''
 
 
-DIST_TABLE_HEADER = '''
+DIST_TABLE_HEADER = f'''
 <style type="text/css">
-    body {
+    body {{
         display: flex;
         flex-direction: column;
         align-items: center;
         font-size: 1rem;
-    }
+    }}
 
-    table {
+    table {{
         border-collapse: collapse;
         border: solid 0.2rem;
         background-color: honeydew;
-    }
+    }}
 
-    td, th {
+    td, th {{
         padding: 0.1rem 0.2rem;
         border-top: solid 0.1rem;
         font-size: 1rem;
-    }
+    }}
 
-    tr th:nth-child(1) {
+    tr th:nth-child(1) {{
         border-right: solid 0.1rem;
-    }
+    }}
+
+    {TABLE_REMAIN_STYLE}
 </style>'''
 
 
@@ -274,10 +306,13 @@ app = Flask(__name__)
 def vague_search_print(comm, data):
     if comm != '*':
         df = data[data.Community.str.contains(comm)].set_index(
-            ['Dist', 'Community', 'Date']).sort_index(ascending=[True, True, False])
+            ['Dist', 'Community', 'Remain', 'Date']).sort_index(
+                ascending=[True, True, True, False])
     else:
-        df = data.set_index(['Dist', 'Community', 'Date']).sort_index(ascending=[True, True, False])
-    df.index.names = ['区', '地址', '感染报告日期']
+        df = data.set_index(
+            ['Dist', 'Community', 'Remain', 'Date']).sort_index(
+                ascending=[True, True, True, False])
+    df.index.names = ['区', '地址', '解封剩余', '报告日期']
     return df
 
 
@@ -285,7 +320,13 @@ def init_all_data():
     with open(DATA_FILE, 'rb') as f:
         all_data = pickle.load(f)
     update_date = all_data.Date.max().strftime('%Y-%m-%d')
-    return all_data, update_date
+    now = dt.datetime.combine(dt.date.today(), dt.time())
+    passed_days = (now - all_data.groupby(['Dist', 'Community']).Date.max()).dt.days
+    remaining_days = 14 - passed_days
+    remaining_days.loc[remaining_days <= 0] = 0
+    all_data = all_data.merge(
+        remaining_days.rename('Remain').reset_index(), on=['Dist', 'Community'])
+    return all_data, update_date, passed_days
 
 
 def get_result_data(place, all_data):
@@ -295,13 +336,6 @@ def get_result_data(place, all_data):
     data = vague_search_print(place, all_data)
     return data
 
-
-def initial_passed_days(all_data):
-    n = dt.datetime.combine(dt.date.today(), dt.time())
-    return (n - all_data.groupby(['Dist', 'Community']).Date.max()).dt.days
-
-
-W, R, O, G = 'white', '#ffdddd', '#ffdfbd', '#c0ffc0'
 
 def get_format(d):
     if d >= 14:
@@ -318,21 +352,19 @@ def get_format(d):
         color_band.append(f'{W} {curr_p}%')
         return curr_p + 1
 
-    for i in range(7 - d):
-        curr_p = append_cell(color_band, R, curr_p)
+    color = R if d < 7 else O
 
-    for i in range(min(7, 14 - d)):
-        curr_p = append_cell(color_band, O, curr_p)
+    for i in range(14 - d):
+        curr_p = append_cell(color_band, color, curr_p)
 
     color_band.append(f'{W} {curr_p}%')
-    color_band.append(f'{G} {curr_p}%')
 
     return f"background: linear-gradient(90deg, {','.join(color_band)});"
 
 
 class formatter:
-    def __init__(self, tt):
-        self.tt = tt
+    def __init__(self, passed_days):
+        self.passed_days = passed_days
         self.app_cnt = 0
         self.Dist = []
 
@@ -341,7 +373,7 @@ class formatter:
         if self.app_cnt == 2:
             ret = []
             for dist, community in zip(self.Dist, s):
-                d = self.tt.loc[dist, community]
+                d = self.passed_days.loc[dist, community]
                 ret.append(get_format(d))
             return pd.Series(ret, index=s.index)
         elif self.app_cnt == 1:
@@ -357,7 +389,13 @@ def get_result_html(place, all_data, passed_days):
     else:
         fmt = formatter(passed_days)
         content = data.style.apply_index(fmt).format_index(
-            formatter={'感染报告日期': lambda x: x.strftime('%Y-%m-%d')}).to_html()
+            formatter={
+                '报告日期': lambda x: x.strftime('%m月%d日'),
+                '解封剩余': lambda x: f'{x} 天 {"封控区" if x > 7 else ("管控区" if x > 0 else "防范区")}'
+            }).to_html().replace(
+                '封控区', '<div class="curr_status">当前：<span class="fkq">封控区</span></div>').replace(
+                '管控区', '<div class="curr_status">当前：<span class="gkq">管控区</span></div>').replace(
+                '防范区', '<div class="curr_status">当前：<span class="ffq">防范区</span></div>')
     return content
 
 
@@ -382,8 +420,7 @@ def init_dist_data(all_data):
             dist_summary.to_html()))
 
 
-ALL_DATA, UPDATE_DATE = init_all_data()
-PASSED_DAYS = initial_passed_days(ALL_DATA)
+ALL_DATA, UPDATE_DATE, PASSED_DAYS = init_all_data()
 ROOT_PAGE = DEFAULT_PAGE.format(UPDATE_DATE)
 DIST_SUMMARY_PAGE = init_dist_data(ALL_DATA)
 
@@ -481,7 +518,8 @@ def backend():
 
 @app.route('/search/<place>')
 def query_place(place):
-    return SEARCH_PAGE.format(title=place, content=get_result_html(place, ALL_DATA, PASSED_DAYS))
+    return SEARCH_PAGE.format(
+        title=place, content=get_result_html(place, ALL_DATA, PASSED_DAYS))
 
 
 EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
@@ -492,7 +530,8 @@ def iframe_wrong_search():
 
 @app.route('/iframe_search/<place>')
 def ifram_search(place):
-    return IFRAME_PAGE_TEMPLATE.format(get_result_html(place, ALL_DATA, PASSED_DAYS))
+    return IFRAME_PAGE_TEMPLATE.format(
+        get_result_html(place, ALL_DATA, PASSED_DAYS))
 
 
 @app.route('/img/logo.jpg')
@@ -502,5 +541,5 @@ def logo_img():
 
 @app.after_request
 def add_header(response):
-    response.cache_control.max_age = 900
+    response.cache_control.max_age = 300
     return response
