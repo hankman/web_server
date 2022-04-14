@@ -390,7 +390,7 @@ def get_result_html(place, all_data, passed_days):
         fmt = formatter(passed_days)
         content = data.style.apply_index(fmt).format_index(
             formatter={
-                '报告日期': lambda x: x.strftime('%m月%d日'),
+                '报告日期': lambda x: x.strftime('%-m月%-d日'),
                 '解封剩余': lambda x: f'{x} 天 {"封控区" if x > 7 else ("管控区" if x > 0 else "防范区")}'
             }).to_html().replace(
                 '封控区', '<div class="curr_status">当前：<span class="fkq">封控区</span></div>').replace(
