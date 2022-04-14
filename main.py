@@ -3,6 +3,7 @@ import os
 import pickle
 import pandas as pd
 import datetime as dt
+from math import log
 from flask import Flask
 
 
@@ -19,6 +20,7 @@ LOGO_FILE = os.path.join(RESOURCE_DIR, 'logo.jpg')
 
 
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
+CNT_FILE = os.path.join(DATA_DIR, 'cnt.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
 
 
@@ -239,12 +241,13 @@ DIST_TABLE_HEADER = f'''
 
     td, th {{
         padding: 0.1rem 0.2rem;
-        border-top: solid 0.1rem;
-        font-size: 1rem;
+        border: solid 0.1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
     }}
 
     tr th:nth-child(1) {{
-        border-right: solid 0.1rem;
+        white-space: normal;
     }}
 
     {TABLE_REMAIN_STYLE}
@@ -329,6 +332,26 @@ def init_all_data():
     return all_data, update_date, passed_days
 
 
+def init_cnt_data():
+    with open(CNT_FILE, 'rb') as f:
+        cnt_data = pickle.load(f)
+    df = cnt_data.loc[cnt_data.index.unique().sort_values(
+        ascending=False)[:5]].reset_index().set_index(['Date', 'Kind']).unstack(
+        ).T.fillna(0).astype(int)
+    df.columns = [d.strftime('%-m月%-d日') for d in df.columns]
+    df.index.names = (None, None)
+    df_log = df.applymap(lambda x: log(x) if x != 0 else 0)
+    styled_df = df.style.background_gradient(
+        axis=None, cmap='Oranges',
+        subset=([i for i in df.index if i[1] == 'BL'], df.columns),
+        gmap=df_log, high=0.85).background_gradient(
+            axis=None, cmap='Blues',
+            subset=([i for i in df.index if i[1] == 'WZZ'], df.columns),
+            gmap=df_log, high=0.85).format_index(
+                formatter=lambda x: '确诊' if x == 'BL' else '无症状', level=1)
+    return styled_df.to_html()
+
+
 def get_result_data(place, all_data):
     place = place.strip()
     if place[-1] == '弄' or place[-1] == '号':
@@ -399,30 +422,40 @@ def get_result_html(place, all_data, passed_days):
     return content
 
 
-def init_dist_data(all_data):
+def init_dist_data(all_data, cnt_data):
     dist_summary = all_data[
         all_data.Date.isin(sorted(all_data.Date.unique())[-5:])
     ].groupby(['Dist', 'Date']).size().rename('Counts').sort_index(
     ).reset_index().set_index(['Dist', 'Date']).unstack()
-    dist_summary.columns = [d[1].strftime('%Y-%m-%d') for d in dist_summary.columns]
+    dist_summary.columns = [d[1].strftime('%-m月%-d日') for d in dist_summary.columns]
     dist_summary.index.name = None
-    dist_summary = dist_summary.style.background_gradient(axis=None, cmap='YlOrRd')
+    dist_summary = dist_summary.style.background_gradient(
+        axis=None, cmap='YlOrRd', high=0.85)
 
     return MAIN_PAGE_TEMPLATE.format(
         header=DIST_TABLE_HEADER,
         content='''
         <a href="/"><img src="/img/logo.jpg" alt="logo" style="height: 4rem;"></a>
-        <h1 style="margin: 0">各行政区感染小区总数</h1>
+        <h1 style="margin: 0">各行政区感染数据统计</h1>
         <div style="font-size: 0.75em; font-style: italic">
             <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a></div>
         </div>
-        <div style="overflow-y: auto;overflow-x: hidden;flex: 1 1 auto;height: 0;align-items: center;display: flex;flex-direction: column;margin-top: 1rem">\n{}</div>'''.format(
-            dist_summary.to_html()))
+            <div style="overflow-y: auto;overflow-x: hidden;flex: 1 1 auto;height: 0;align-items: center;display: flex;flex-direction: column;margin-top: 1rem">
+            <div><h2>各区感染小区数统计（单位：小区）</h2></div>
+            <div id="table1">
+                \n{infect_table}
+            </div>
+            <div id="table2"><h2>各区确诊和无症状人数统计（单位：人）</h2></div>
+            <div>
+                \n{cnt_table}
+            </div>
+        </div>'''.format(infect_table=dist_summary.to_html(), cnt_table=cnt_data))
 
 
 ALL_DATA, UPDATE_DATE, PASSED_DAYS = init_all_data()
+CNT_DATA = init_cnt_data()
 ROOT_PAGE = DEFAULT_PAGE.format(UPDATE_DATE)
-DIST_SUMMARY_PAGE = init_dist_data(ALL_DATA)
+DIST_SUMMARY_PAGE = init_dist_data(ALL_DATA, CNT_DATA)
 
 
 SEARCH_PAGE = MAIN_PAGE_TEMPLATE.format(
