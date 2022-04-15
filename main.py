@@ -341,7 +341,7 @@ def init_cnt_data():
     df.columns = [d.strftime('%-m月%-d日') for d in df.columns]
     df.index.names = (None, None)
     df_log = df.applymap(lambda x: log(x) if x != 0 else 0)
-    styled_df = df.style.background_gradient(
+    styled_df = df.sort_index().style.background_gradient(
         axis=None, cmap='Oranges',
         subset=([i for i in df.index if i[1] == 'BL'], df.columns),
         gmap=df_log, high=0.85).background_gradient(
@@ -429,7 +429,7 @@ def init_dist_data(all_data, cnt_data):
     ).reset_index().set_index(['Dist', 'Date']).unstack()
     dist_summary.columns = [d[1].strftime('%-m月%-d日') for d in dist_summary.columns]
     dist_summary.index.name = None
-    dist_summary = dist_summary.style.background_gradient(
+    dist_summary = dist_summary.sort_index().style.background_gradient(
         axis=None, cmap='YlOrRd', high=0.85)
 
     return MAIN_PAGE_TEMPLATE.format(
