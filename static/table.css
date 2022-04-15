@@ -31,6 +31,11 @@ th {
     border-bottom: solid 0.1rem;
 }*/
 
+.extra-header-table
+{
+    padding-bottom: 3rem;
+}
+
 .extra-header-table tbody tr th:nth-last-child(1)
 {
     white-space: nowrap;
