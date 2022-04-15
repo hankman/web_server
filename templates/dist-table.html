@@ -1,0 +1,16 @@
+<link rel="stylesheet" type="text/css" href="/static/table.css">
+<link rel="stylesheet" type="text/css" href="/static/dist.css">
+
+<div class="table-content flex-float flex-vertical dist-tables">
+<div class="table-sec">
+    <h2>各区感染小区数统计（单位：小区）</h2>
+    <div>
+        {{ infect_table|safe }}
+    </div>
+</div>
+<div class="table-sec">
+    <h2>各区确诊和无症状人数统计（单位：人）</h2>
+    <div>
+        {{ cnt_table|safe }}
+    </div>
+</div>

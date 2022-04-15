@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
+    </head>
+    <body class="flex-vertical">
+        <div class="flex-float flex-vertical" id="main">
+            <div class="title-div flex-fixed">
+                {% if logo_sameline %}
+                {% include 'search-title.html' %}
+                {% else%}
+                {% include 'common-title.html' %}
+                {% endif %}
+
+                <div class="notice">
+                    <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a>
+                        {% if extra_notice %}
+                        <span class="extra-notice">{{ extra_notice }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if search %}
+                {% include 'search-box.html' %}
+                {% else %}
+                <div class="update-date">数据更新至：<a href="/dist">{{ update_date }}</a></div>
+                {% endif %}
+            </div>
+
+            {% if search %}
+            <div class="flex-float flex-vertical iframe-div">
+                <iframe class="flex-float" id="result" src="about:blank"></iframe>
+            </div>
+            {% elif long_search %}
+            {% include 'long-search-table.html' %}
+            {% elif dist %}
+            {% include 'dist-table.html' %}
+            {% endif %}
+        </div>
+        <div id="foot">
+            <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
+            </div>
+        </div>
+    </body>
+</html>
