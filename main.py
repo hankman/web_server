@@ -33,15 +33,9 @@ app = Flask(__name__)
 
 def vague_search_print(comm, data):
     if comm != '*':
-        df = data[data.Community.str.contains(comm)].set_index(
-            ['Dist', 'Community', 'Remain', 'Date']).sort_index(
-                ascending=[True, True, True, False])
+        return data[data.Community.str.contains(comm)]
     else:
-        df = data.set_index(
-            ['Dist', 'Community', 'Remain', 'Date']).sort_index(
-                ascending=[True, True, True, False])
-    df.index.names = ['区', '地址', '解封剩余', '报告日期']
-    return df
+        return data
 
 
 def init_all_data():
@@ -54,6 +48,8 @@ def init_all_data():
     remaining_days.loc[remaining_days <= 0] = 0
     all_data = all_data.merge(
         remaining_days.rename('Remain').reset_index(), on=['Dist', 'Community'])
+    all_data['Remain_str'] = all_data.Remain.astype(str) + ' 天'
+    all_data['Date_str'] = pd.to_datetime(all_data.Date).dt.strftime('%-m月%-d日')
     return all_data, update_date, passed_days
 
 
@@ -96,66 +92,16 @@ def get_result_data(place, all_data):
     return data
 
 
-def get_format(d):
-    if d >= 14:
-        return f'background-color: {G}'
-
-    color_band = [f'{W} 0%']
-    curr_p = d * 7
-
-    def append_cell(color_band, color, curr_p):
-        color_band.append(f'{W} {curr_p}%')
-        color_band.append(f'{color} {curr_p}%')
-        curr_p += 6
-        color_band.append(f'{color} {curr_p}%')
-        color_band.append(f'{W} {curr_p}%')
-        return curr_p + 1
-
-    color = R if d < 7 else O
-
-    for i in range(14 - d):
-        curr_p = append_cell(color_band, color, curr_p)
-
-    color_band.append(f'{W} {curr_p}%')
-
-    return f"background: linear-gradient(90deg, {','.join(color_band)});"
-
-
-class formatter:
-    def __init__(self, passed_days):
-        self.passed_days = passed_days
-        self.app_cnt = 0
-        self.Dist = []
-
-    def __call__(self, s):
-        self.app_cnt += 1
-        if self.app_cnt == 2:
-            ret = []
-            for dist, community in zip(self.Dist, s):
-                d = self.passed_days.loc[dist, community]
-                ret.append(get_format(d))
-            return pd.Series(ret, index=s.index)
-        elif self.app_cnt == 1:
-            self.Dist = s
-
-        return pd.Series('', index=s.index)
-
-
-def get_result_html(place, all_data, passed_days):
+def get_result_html(place, all_data):
     data = get_result_data(place, all_data)
     if data.shape[0] == 0:
-        content = '<span>(无感染记录或未收录地址。注意，输入地址请勿包含行政区。)</span>'
+        return '<span>(无感染记录或未收录地址。注意，输入地址请勿包含行政区。)</span>'
     else:
-        fmt = formatter(passed_days)
-        content = data.style.apply_index(fmt).format_index(
-            formatter={
-                '报告日期': lambda x: x.strftime('%-m月%-d日'),
-                '解封剩余': lambda x: f'{x} 天 {"封控区" if x > 7 else ("管控区" if x > 0 else "防范区")}'
-            }).to_html().replace(
-                '封控区', '<div class="curr_status">当前：<span class="fkq">封控区</span></div>').replace(
-                '管控区', '<div class="curr_status">当前：<span class="gkq">管控区</span></div>').replace(
-                '防范区', '<div class="curr_status">当前：<span class="ffq">防范区</span></div>')
-    return content
+        data = data.sort_values(['Dist', 'Community', 'Date'], ascending=[True, True, False]).rename(
+            columns={'Dist': '区', 'Community': '地址', 'Date_str': '报告日期', 'Remain_str': '解封剩余'})
+
+        return data[['区', '地址', '解封剩余', '报告日期']].set_index(
+            ['区', '地址', '解封剩余', '报告日期']).style.to_html()
 
 
 def init_dist_data(all_data):
@@ -257,7 +203,7 @@ def query_place(place):
         'main.html', long_search=True, title='"{}"的查询结果'.format(place),
         extra_notice="，将本页发送到桌面以快速查询",
         update_date=UPDATE_DATE,
-        table_content=get_result_html(place, ALL_DATA, PASSED_DAYS))
+        table_content=get_result_html(place, ALL_DATA))
 
 
 EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
@@ -268,7 +214,7 @@ def iframe_wrong_search():
 
 @app.route('/iframe_search/<place>')
 def ifram_search(place):
-    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA, PASSED_DAYS))
+    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA))
 
 
 @app.route('/img/logo.jpg')
