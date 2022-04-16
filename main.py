@@ -2,25 +2,22 @@ import os
 import pickle
 import pandas as pd
 import datetime as dt
+import json
 from math import log
 from flask import Flask, render_template
 
 
-# WEB_SERVER_DIR = '/home/cfan/web_server'
-# DATA_DIR = '/home/cfan/notebooks/data'
+with open(os.path.expanduser('/etc/web_server/server.json')) as f:
+    server_conf = json.load(f)
 
 
-WEB_SERVER_DIR = '/home/fan/code/py/web_server'
-DATA_DIR = '/home/fan/code/py/notebooks/data'
-
+DATA_DIR = server_conf['DATA_DIR']
+RESOURCES_DIR = server_conf['RESOURCES_DIR']
 
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 CNT_FILE = os.path.join(DATA_DIR, 'cnt.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
-RESOURCE_DIR = os.path.join(WEB_SERVER_DIR, 'resources')
 
-
-W, R, O, G = 'white', '#ffdddd', '#ffdfbd', '#c0ffc0'
 
 app = Flask(__name__)
 
@@ -113,7 +110,7 @@ def init_dist_data(all_data):
 ALL_DATA, UPDATE_DATE, PASSED_DAYS = init_all_data()
 CNT_DATA = init_cnt_data()
 DIST_DATA = init_dist_data(ALL_DATA)
-RESOURCE_DATA = init_file_data(RESOURCE_DIR)
+RESOURCES_DATA = init_file_data(RESOURCES_DIR)
 
 
 @app.route('/')
@@ -209,7 +206,7 @@ def test_iframe_search(place):
 
 @app.route('/resources/<file>')
 def resource(file):
-    return RESOURCE_DATA[file]
+    return RESOURCES_DATA[file]
 
 
 @app.after_request
