@@ -4,7 +4,7 @@ import pandas as pd
 import datetime as dt
 import json
 from math import log
-from flask import Flask, render_template
+from flask import Flask, render_template, Response
 
 
 with open(os.path.expanduser('/etc/web_server/server.json')) as f:
@@ -206,7 +206,28 @@ def test_iframe_search(place):
 
 @app.route('/resources/<file>')
 def resource(file):
-    return RESOURCES_DATA[file]
+    mimetype = 'text/html'
+    if file.endswith('.ico'):
+        mimetype = 'image/x-icon'
+    elif file.endswith('.js'):
+        mimetype = 'text/javascript'
+    elif file.endswith('.png'):
+        mimetype = 'image/png'
+    elif file.endswith('.jpg'):
+        mimetype = 'image/jpg'
+    elif file.endswith('.css'):
+        mimetype = 'text/css'
+    return Response(RESOURCES_DATA[file], mimetype=mimetype)
+
+
+@app.route('/apple-touch-icon<size>')
+def app_icons(size):
+    return Response(RESOURCES_DATA['apple-touch-icon.png'], mimetype='image/png')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return Response(RESOURCES_DATA['favicon.ico'], mimetype='image/x-icon')
 
 
 @app.after_request
