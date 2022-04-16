@@ -1,4 +1,3 @@
-
 import os
 import pickle
 import pandas as pd
@@ -7,23 +6,18 @@ from math import log
 from flask import Flask, render_template
 
 
-WEB_SERVER_DIR = '/home/cfan/web_server'
-DATA_DIR = '/home/cfan/notebooks/data'
-
-# WEB_SERVER_DIR = '/home/fan/code/py/web_server'
-# DATA_DIR = '/home/fan/code/py/notebooks/data'
+# WEB_SERVER_DIR = '/home/cfan/web_server'
+# DATA_DIR = '/home/cfan/notebooks/data'
 
 
-RESOURCE_DIR = os.path.join(WEB_SERVER_DIR, 'resources')
-FAVICON_FILE = os.path.join(RESOURCE_DIR, 'favicon.ico')
-AVATAR_FILE = os.path.join(RESOURCE_DIR, 'avatar.png')
-LOGO_FILE = os.path.join(RESOURCE_DIR, 'logo.jpg')
+WEB_SERVER_DIR = '/home/fan/code/py/web_server'
+DATA_DIR = '/home/fan/code/py/notebooks/data'
+
 
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 CNT_FILE = os.path.join(DATA_DIR, 'cnt.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
-
-STATIC_FILE_PATH = os.path.join(WEB_SERVER_DIR, 'static')
+RESOURCE_DIR = os.path.join(WEB_SERVER_DIR, 'resources')
 
 
 W, R, O, G = 'white', '#ffdddd', '#ffdfbd', '#c0ffc0'
@@ -73,15 +67,15 @@ def init_cnt_data():
     return styled_df.to_html()
 
 
-def init_static_data():
-    static_data = {}
-    for filename in os.listdir(STATIC_FILE_PATH):
-        path = os.path.join(STATIC_FILE_PATH, filename)
+def init_file_data(directory):
+    file_data = {}
+    for filename in os.listdir(directory):
+        path = os.path.join(directory, filename)
 
         if os.path.isfile(path):
-            with open(path, 'r') as f:
-                static_data[filename] = f.read()
-    return static_data
+            with open(path, 'rb') as f:
+                file_data[filename] = f.read()
+    return file_data
 
 
 def get_result_data(place, all_data):
@@ -119,45 +113,37 @@ def init_dist_data(all_data):
 ALL_DATA, UPDATE_DATE, PASSED_DAYS = init_all_data()
 CNT_DATA = init_cnt_data()
 DIST_DATA = init_dist_data(ALL_DATA)
-STATIC_DATA = init_static_data()
+RESOURCE_DATA = init_file_data(RESOURCE_DIR)
 
 
 @app.route('/')
+def test_root():
+    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
+        url_prefix='', relative_to_root='.')
+
+
+@app.route('/test/')
 def root():
-    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE)
+    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
+        url_prefix='https://hankman.github.io/chenfan_info_web_resources', relative_to_root='.')
 
 
-@app.route('/dist')
+@app.route('/dist/')
 def dist_summary():
     return render_template(
         'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
-        infect_table=DIST_DATA, cnt_table=CNT_DATA
+        infect_table=DIST_DATA, cnt_table=CNT_DATA, url_prefix='', relative_to_root='..'
     )
 
 
-def processing_debug_request():
-    with open(DEBUG_FILE, 'rb') as f:
-        return f.read()
-
-
-with open(FAVICON_FILE, 'rb') as f:
-    FVC_DATA = f.read()
-
-
-def processing_favicon():
-    return FVC_DATA
-
-
-with open(AVATAR_FILE, 'rb') as f:
-    AVATAR_DATA = f.read()
-
-
-with open(LOGO_FILE, 'rb') as f:
-    LOGO_DATA = f.read()
-
-
-def processing_avatar():
-    return AVATAR_DATA
+@app.route('/test/dist/')
+def test_dist_summary():
+    return render_template(
+        'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
+        infect_table=DIST_DATA, cnt_table=CNT_DATA,
+        url_prefix='https://hankman.github.io/chenfan_info_web_resources',
+        relative_to_root='..'
+    )
 
 
 def processing_backend():
@@ -174,22 +160,8 @@ def processing_backend():
 
 @app.route('/debug')
 def debug_page():
-    return processing_debug_request()
-
-
-@app.route('/test')
-def test_page():
-    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE)
-
-
-@app.route('/favicon.ico')
-def favicon():
-    return processing_favicon()
-
-
-@app.route('/apple-touch-icon.png')
-def apple_icon():
-    return processing_avatar()
+    with open(DEBUG_FILE, 'rb') as f:
+        return f.read()
 
 
 @app.route('/backend')
@@ -203,7 +175,18 @@ def query_place(place):
         'main.html', long_search=True, title='"{}"的查询结果'.format(place),
         extra_notice="，将本页发送到桌面以快速查询",
         update_date=UPDATE_DATE,
-        table_content=get_result_html(place, ALL_DATA))
+        table_content=get_result_html(place, ALL_DATA),
+        url_prefix='', relative_to_root='..')
+
+
+@app.route('/test/search/<place>')
+def test_search_page(place):
+    return render_template('main.html', long_search=True, title='"{}"的查询结果'.format(place),
+        extra_notice="，将本页发送到桌面以快速查询",
+        update_date=UPDATE_DATE,
+        table_content=get_result_html(place, ALL_DATA),
+        url_prefix='https://hankman.github.io/chenfan_info_web_resources',
+        relative_to_root='..')
 
 
 EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
@@ -213,18 +196,20 @@ def iframe_wrong_search():
 
 
 @app.route('/iframe_search/<place>')
-def ifram_search(place):
-    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA))
+def iframe_search(place):
+    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
+        url_prefix='')
 
 
-@app.route('/img/logo.jpg')
-def logo_img():
-    return LOGO_DATA;
+@app.route('/test/iframe_search/<place>')
+def test_iframe_search(place):
+    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
+        url_prefix='https://hankman.github.io/chenfan_info_web_resources')
 
 
-@app.route('/static/<file>')
-def static_file(file):
-    return STATIC_DATA[file]
+@app.route('/resources/<file>')
+def resource(file):
+    return RESOURCE_DATA[file]
 
 
 @app.after_request

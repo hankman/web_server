@@ -2,7 +2,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="stylesheet" type="text/css" href="/static/main.css">
+        <title>感染记录查询</title>
+        <link rel="icon" type="image/png" href="{{ url_prefix }}/resources/favicon.ico">
+        <link rel=”apple-touch-icon-precomposed” href=”{{ url_prefix }}/resources/avatar.png”>
+        <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/main.css">
     </head>
     <body class="flex-vertical">
         <div class="flex-float flex-vertical" id="main">
@@ -14,7 +17,7 @@
                 {% endif %}
 
                 <div class="notice">
-                    <div>*使用前请仔细阅读<a href="/inst.html">本站使用说明</a>
+                    <div>*使用前请仔细阅读<a href="{{ url_prefix }}/resources/inst.html">本站使用说明</a>
                         {% if extra_notice %}
                         <span class="extra-notice">{{ extra_notice }}</span>
                         {% endif %}
@@ -24,7 +27,7 @@
                 {% if search %}
                 {% include 'search-box.html' %}
                 {% else %}
-                <div class="update-date">数据更新至：<a href="/dist">{{ update_date }}</a></div>
+                <div class="update-date">数据更新至：<a href="{{ relative_to_root }}/dist/">{{ update_date }}</a></div>
                 {% endif %}
             </div>
 

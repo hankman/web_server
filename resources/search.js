@@ -49,7 +49,7 @@ function search_address()
         flash_input();
         return;
     }
-    document.getElementById("result").src = "/iframe_search/" + addr_input.value
+    document.getElementById("result").src = "./iframe_search/" + addr_input.value
     disable_query()
     setTimeout(enable_query, 3000)
 }
@@ -68,5 +68,5 @@ long_search_button.addEventListener("click", function() {
             flash_input();
             return;
         }
-        window.location.pathname = ("/search/" + addr)
+        window.location.pathname = "./search/" + addr
     })
