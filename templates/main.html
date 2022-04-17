@@ -4,7 +4,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>感染记录查询</title>
         <link rel="icon" type="image/png" href="{{ url_prefix }}/resources/favicon.ico">
-        <link rel=”apple-touch-icon-precomposed” href=”{{ url_prefix }}/resources/avatar.png”>
+        <link rel=”apple-touch-icon-precomposed” href=”{{ url_prefix }}/resources/apple-touch-icon.png”>
         <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/main.css">
     </head>
     <body class="flex-vertical">
@@ -21,7 +21,7 @@
                         {% if extra_notice %}
                         <span class="extra-notice">{{ extra_notice }}</span>
                         {% endif %}
-                        。 如网页显示不正常，可以切换回<a href="/old/">原网页</a>
+                        {{ switch_notice }}
                     </div>
                 </div>
 

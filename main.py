@@ -5,6 +5,7 @@ import datetime as dt
 import json
 from math import log
 from flask import Flask, render_template, Response
+from jinja2 import FileSystemLoader, Environment
 
 
 with open(os.path.expanduser('/etc/web_server/server.json')) as f:
@@ -17,6 +18,10 @@ RESOURCES_DIR = server_conf['RESOURCES_DIR']
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 CNT_FILE = os.path.join(DATA_DIR, 'cnt.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
+
+
+template_loader = FileSystemLoader(searchpath='./templates/')
+template_env =Environment(loader=template_loader)
 
 
 app = Flask(__name__)
@@ -113,34 +118,48 @@ DIST_DATA = init_dist_data(ALL_DATA)
 RESOURCES_DATA = init_file_data(RESOURCES_DIR)
 
 
+
 @app.route('/old/')
 def old_root():
-    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
-        url_prefix='', relative_to_root='.')
+    return old_root.PAGE
+
+old_root.PAGE = template_env.get_template('main.html').render(
+    search=True, logo_sameline=True, update_date=UPDATE_DATE,
+    url_prefix='', relative_to_root='.',
+    switch_notice='。 如网页显示太慢，可以切换至<a href="/">新网页</a>')
 
 
 @app.route('/')
 def root():
-    return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
-        url_prefix='https://hankman.github.io/chenfan_info_web_resources', relative_to_root='.')
+    return root.PAGE
+
+root.PAGE = template_env.get_template('main.html').render(
+    search=True, logo_sameline=True, update_date=UPDATE_DATE,
+    url_prefix='https://hankman.github.io/chenfan_info_web_resources',
+    relative_to_root='.',
+    switch_notice='。 如网页显示不正常，可以切换回<a href="/old/">旧版网页</a>')
 
 
 @app.route('/old/dist/')
 def old_dist_summary():
-    return render_template(
-        'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
-        infect_table=DIST_DATA, cnt_table=CNT_DATA, url_prefix='', relative_to_root='..'
-    )
+    return old_dist_summary.PAGE
+
+old_dist_summary.PAGE = template_env.get_template('main.html').render(
+        dist=True, update_date=UPDATE_DATE, infect_table=DIST_DATA,
+        cnt_table=CNT_DATA, url_prefix='', relative_to_root='..'
+    ).replace('{title}', '各行政区感染数据统计')
 
 
 @app.route('/dist/')
 def dist_summary():
-    return render_template(
-        'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
-        infect_table=DIST_DATA, cnt_table=CNT_DATA,
+    return dist_summary.PAGE
+
+dist_summary.PAGE = template_env.get_template('main.html').render(
+        dist=True, update_date=UPDATE_DATE, infect_table=DIST_DATA,
+        cnt_table=CNT_DATA,
         url_prefix='https://hankman.github.io/chenfan_info_web_resources',
         relative_to_root='..'
-    )
+    ).replace('{title}', '各行政区感染数据统计')
 
 
 def processing_backend():
@@ -167,42 +186,44 @@ def backend():
 
 
 @app.route('/old/search/<place>')
-def old_query_place(place):
-    return render_template(
-        'main.html', long_search=True, title='"{}"的查询结果'.format(place),
-        extra_notice="，将本页发送到桌面以快速查询",
-        update_date=UPDATE_DATE,
-        table_content=get_result_html(place, ALL_DATA),
-        url_prefix='', relative_to_root='..')
+def old_search_page(place):
+    return old_search_page.PAGE_TEMPLATE.format(
+        title='"{}"的查询结果'.format(place),
+        table_content=get_result_html(place, ALL_DATA))
+
+old_search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
+    long_search=True, extra_notice="，将本页发送到桌面以快速查询",
+    update_date=UPDATE_DATE, url_prefix='', relative_to_root='..')
 
 
 @app.route('/search/<place>')
 def search_page(place):
-    return render_template(
-        'main.html', long_search=True, title='"{}"的查询结果'.format(place),
-        extra_notice="，将本页发送到桌面以快速查询",
-        update_date=UPDATE_DATE,
-        table_content=get_result_html(place, ALL_DATA),
-        url_prefix='https://hankman.github.io/chenfan_info_web_resources',
-        relative_to_root='..')
+    return search_page.PAGE_TEMPLATE.format(
+    title='"{}"的查询结果'.format(place),
+    table_content=get_result_html(place, ALL_DATA))
 
-
-EMPTY_PAGE = '<html><body style="text-align: center;font-size: 1rem"><h3>错误查询，请先输入地址。</h3></body></html>'
-@app.route('/iframe_search/')
-def iframe_wrong_search():
-    return EMPTY_PAGE
+search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
+    long_search=True, extra_notice="，将本页发送到桌面以快速查询",
+    update_date=UPDATE_DATE,
+    url_prefix='https://hankman.github.io/chenfan_info_web_resources',
+    relative_to_root='..')
 
 
 @app.route('/old/iframe_search/<place>')
 def old_iframe_search(place):
-    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
-        url_prefix='')
+    return old_iframe_search.PAGE_TEMPLATE.format(
+        table_content=get_result_html(place, ALL_DATA))
+
+old_iframe_search.PAGE_TEMPLATE = template_env.get_template(
+    'search-iframe.html').render(url_prefix='')
 
 
 @app.route('/iframe_search/<place>')
 def iframe_search(place):
-    return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
-        url_prefix='https://hankman.github.io/chenfan_info_web_resources')
+    return iframe_search.PAGE_TEMPLATE.format(table_content=get_result_html(place, ALL_DATA))
+
+iframe_search.PAGE_TEMPLATE = template_env.get_template('search-iframe.html').render(
+    url_prefix='https://hankman.github.io/chenfan_info_web_resources')
 
 
 @app.route('/resources/<file>')
