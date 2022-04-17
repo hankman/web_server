@@ -53,19 +53,28 @@ def init_cnt_data():
     with open(CNT_FILE, 'rb') as f:
         cnt_data = pickle.load(f)
     df = cnt_data.loc[cnt_data.index.unique().sort_values(
-        ascending=False)[:5]].reset_index().set_index(['Date', 'Kind']).unstack(
+        ascending=False)[:5]].fillna(0)
+    df['全市'] = df.sum(axis=1)
+    df = df.reset_index().set_index(['Date', 'Kind']).unstack(
         ).T.fillna(0).astype(int)
+
     df.columns = [d.strftime('%-m月%-d日') for d in df.columns]
     df.index.names = (None, None)
     df_log = df.applymap(lambda x: log(x) if x != 0 else 0)
     styled_df = df.sort_index().style.background_gradient(
-        axis=None, cmap='Oranges',
-        subset=([i for i in df.index if i[1] == 'BL'], df.columns),
+        axis=None, cmap='Oranges', text_color_threshold=0,
+        subset=([i for i in df.index if i[1] == 'BL' and i[0] != '全市'], df.columns),
         gmap=df_log, high=0.85).background_gradient(
-            axis=None, cmap='Blues',
-            subset=([i for i in df.index if i[1] == 'WZZ'], df.columns),
-            gmap=df_log, high=0.85).format_index(
-                formatter=lambda x: '确诊' if x == 'BL' else '无症状', level=1)
+            axis=None, cmap='Blues', text_color_threshold=0,
+            subset=([i for i in df.index if i[1] == 'WZZ' and i[0] != '全市'], df.columns),
+            gmap=df_log, high=0.85).background_gradient(
+                axis=None, cmap='Purples', text_color_threshold=0,
+                subset=([i for i in df.index if i[1] == 'BL' and i[0] == '全市'], df.columns),
+                high=0.85).background_gradient(
+                    axis=None, cmap='Greens', text_color_threshold=0,
+                    subset=([i for i in df.index if i[1] == 'WZZ' and i[0] == '全市'], df.columns),
+                    high=0.85).format_index(
+                        formatter=lambda x: '确诊' if x == 'BL' else '无症状', level=1)
     return styled_df.to_html()
 
 
@@ -120,10 +129,16 @@ def init_dist_data(all_data):
         all_data.Date.isin(sorted(all_data.Date.unique())[-5:])
     ].groupby(['Dist', 'Date']).size().rename('Counts').sort_index(
     ).reset_index().set_index(['Dist', 'Date']).unstack()
+    dist_summary = pd.concat([dist_summary, dist_summary.sum().rename('全市').to_frame().T])
+
     dist_summary.columns = [d[1].strftime('%-m月%-d日') for d in dist_summary.columns]
     dist_summary.index.name = None
     dist_summary = dist_summary.sort_index().style.background_gradient(
-        axis=None, cmap='YlOrRd', high=0.85)
+        axis=None, cmap='Oranges', high=0.85, text_color_threshold=0, subset=(
+            [i for i in dist_summary.index if i != '全市'], dist_summary.columns))
+    dist_summary = dist_summary.background_gradient(
+        axis=None, cmap='Blues', high=0.85, text_color_threshold=0,
+        subset=(['全市'], dist_summary.columns))
     return dist_summary.to_html()
 
 
