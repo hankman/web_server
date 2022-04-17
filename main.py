@@ -113,28 +113,28 @@ DIST_DATA = init_dist_data(ALL_DATA)
 RESOURCES_DATA = init_file_data(RESOURCES_DIR)
 
 
-@app.route('/')
-def test_root():
+@app.route('/old/')
+def old_root():
     return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
         url_prefix='', relative_to_root='.')
 
 
-@app.route('/test/')
+@app.route('/')
 def root():
     return render_template('main.html', search=True, logo_sameline=True, update_date=UPDATE_DATE,
         url_prefix='https://hankman.github.io/chenfan_info_web_resources', relative_to_root='.')
 
 
-@app.route('/dist/')
-def dist_summary():
+@app.route('/old/dist/')
+def old_dist_summary():
     return render_template(
         'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
         infect_table=DIST_DATA, cnt_table=CNT_DATA, url_prefix='', relative_to_root='..'
     )
 
 
-@app.route('/test/dist/')
-def test_dist_summary():
+@app.route('/dist/')
+def dist_summary():
     return render_template(
         'main.html', dist=True, title='各行政区感染数据统计', update_date=UPDATE_DATE,
         infect_table=DIST_DATA, cnt_table=CNT_DATA,
@@ -166,8 +166,8 @@ def backend():
     return processing_backend()
 
 
-@app.route('/search/<place>')
-def query_place(place):
+@app.route('/old/search/<place>')
+def old_query_place(place):
     return render_template(
         'main.html', long_search=True, title='"{}"的查询结果'.format(place),
         extra_notice="，将本页发送到桌面以快速查询",
@@ -176,9 +176,10 @@ def query_place(place):
         url_prefix='', relative_to_root='..')
 
 
-@app.route('/test/search/<place>')
-def test_search_page(place):
-    return render_template('main.html', long_search=True, title='"{}"的查询结果'.format(place),
+@app.route('/search/<place>')
+def search_page(place):
+    return render_template(
+        'main.html', long_search=True, title='"{}"的查询结果'.format(place),
         extra_notice="，将本页发送到桌面以快速查询",
         update_date=UPDATE_DATE,
         table_content=get_result_html(place, ALL_DATA),
@@ -192,14 +193,14 @@ def iframe_wrong_search():
     return EMPTY_PAGE
 
 
-@app.route('/iframe_search/<place>')
-def iframe_search(place):
+@app.route('/old/iframe_search/<place>')
+def old_iframe_search(place):
     return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
         url_prefix='')
 
 
-@app.route('/test/iframe_search/<place>')
-def test_iframe_search(place):
+@app.route('/iframe_search/<place>')
+def iframe_search(place):
     return render_template('search-iframe.html', table_content=get_result_html(place, ALL_DATA),
         url_prefix='https://hankman.github.io/chenfan_info_web_resources')
 
