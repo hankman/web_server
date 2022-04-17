@@ -70,10 +70,10 @@ def init_cnt_data():
             gmap=df_log, high=0.85).background_gradient(
                 axis=None, cmap='Purples', text_color_threshold=0,
                 subset=([i for i in df.index if i[1] == 'BL' and i[0] == '全市'], df.columns),
-                high=0.85).background_gradient(
+                high=0.85, low=0.25).background_gradient(
                     axis=None, cmap='Greens', text_color_threshold=0,
                     subset=([i for i in df.index if i[1] == 'WZZ' and i[0] == '全市'], df.columns),
-                    high=0.85).format_index(
+                    high=0.85, low=0.25).format_index(
                         formatter=lambda x: '确诊' if x == 'BL' else '无症状', level=1)
     return styled_df.to_html()
 
@@ -115,7 +115,7 @@ def get_result_data(place, all_data):
 def get_result_html(place, all_data):
     data = get_result_data(place, all_data)
     if data.shape[0] == 0:
-        return '<span>(无感染记录或未收录地址。注意，输入地址请勿包含行政区。)</span>'
+        return '<span>(无感染记录或未收录地址。注意，输入地址请勿包含行政区或者楼栋。)</span>'
     else:
         data = data.sort_values(['Dist', 'Community', 'Date'], ascending=[True, True, False]).rename(
             columns={'Dist': '区', 'Community': '地址', 'Date_str': '报告日期', 'Remain_str': '解封剩余'})
@@ -137,7 +137,7 @@ def init_dist_data(all_data):
         axis=None, cmap='Oranges', high=0.85, text_color_threshold=0, subset=(
             [i for i in dist_summary.index if i != '全市'], dist_summary.columns))
     dist_summary = dist_summary.background_gradient(
-        axis=None, cmap='Blues', high=0.85, text_color_threshold=0,
+        axis=None, cmap='Blues', high=0.85, low=0.25, text_color_threshold=0,
         subset=(['全市'], dist_summary.columns))
     return dist_summary.to_html()
 
