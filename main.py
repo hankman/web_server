@@ -69,6 +69,21 @@ def init_cnt_data():
     return styled_df.to_html()
 
 
+def get_file_mime_type(file):
+    mimetype = 'text/html'
+    if file.endswith('.ico'):
+        mimetype = 'image/x-icon'
+    elif file.endswith('.js'):
+        mimetype = 'text/javascript'
+    elif file.endswith('.png'):
+        mimetype = 'image/png'
+    elif file.endswith('.jpg'):
+        mimetype = 'image/jpg'
+    elif file.endswith('.css'):
+        mimetype = 'text/css'
+    return mimetype
+
+
 def init_file_data(directory):
     file_data = {}
     for filename in os.listdir(directory):
@@ -76,7 +91,7 @@ def init_file_data(directory):
 
         if os.path.isfile(path):
             with open(path, 'rb') as f:
-                file_data[filename] = f.read()
+                file_data[filename] = (f.read(), get_file_mime_type(filename))
     return file_data
 
 
@@ -228,28 +243,20 @@ iframe_search.PAGE_TEMPLATE = template_env.get_template('search-iframe.html').re
 
 @app.route('/resources/<file>')
 def resource(file):
-    mimetype = 'text/html'
-    if file.endswith('.ico'):
-        mimetype = 'image/x-icon'
-    elif file.endswith('.js'):
-        mimetype = 'text/javascript'
-    elif file.endswith('.png'):
-        mimetype = 'image/png'
-    elif file.endswith('.jpg'):
-        mimetype = 'image/jpg'
-    elif file.endswith('.css'):
-        mimetype = 'text/css'
-    return Response(RESOURCES_DATA[file], mimetype=mimetype)
+    res_data = RESOURCES_DATA[file]
+    return Response(res_data[0], mimetype=res_data[1])
 
 
 @app.route('/apple-touch-icon<size>')
 def app_icons(size):
-    return Response(RESOURCES_DATA['apple-touch-icon.png'], mimetype='image/png')
+    res_data = RESOURCES_DATA['apple-touch-icon.png']
+    return Response(res_data[0], mimetype=res_data[1])
 
 
 @app.route('/favicon.ico')
 def favicon():
-    return Response(RESOURCES_DATA['favicon.ico'], mimetype='image/x-icon')
+    res_data = RESOURCES_DATA['favicon.ico']
+    return Response(res_data[0], mimetype=res_data[1])
 
 
 @app.after_request
