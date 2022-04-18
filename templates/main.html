@@ -6,6 +6,7 @@
         <link rel="icon" type="image/x-icon" href="{{ url_prefix }}/resources/favicon.ico">
         <link rel=”apple-touch-icon-precomposed” type="image/png" href="{{ url_prefix }}/resources/apple-touch-icon.png">
         <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/main.css">
+        <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/table.css">
     </head>
     <body class="flex-vertical">
         <div class="flex-float flex-vertical" id="main">
@@ -32,13 +33,21 @@
                 {% endif %}
             </div>
 
-            {% if search %}
-            <div class="flex-float flex-vertical iframe-div">
-                <iframe class="flex-float" id="result" src="about:blank"></iframe>
+            {% if (search or long_search) %}
+            <div class="notice">*解封剩余和三区划分均为推测值，具体政策请咨询当地防疫机构。</div>
+            <div id="long-search-table" class="flex-float flex-vertical">
+                <div class="table-content flex-vertical extra-header-table" id="data-div"></div>
             </div>
-            {% elif long_search %}
-            {% include 'long-search-table.html' %}
-            {% elif dist %}
+                {% if search %}
+                <script src="{{ url_prefix }}/resources/create_table.js"></script>
+                <script src="{{ url_prefix }}/resources/main.js"></script>
+                {% else %}
+                <script src="{{ url_prefix }}/resources/create_table.js"></script>
+                <script src="{{ url_prefix }}/resources/long_search.js"></script>
+                {% endif %}
+            {% endif %}
+
+            {% if dist %}
             {% include 'dist-table.html' %}
             {% endif %}
         </div>
