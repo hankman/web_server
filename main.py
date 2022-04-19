@@ -209,6 +209,11 @@ def favicon():
     return Response(res_data[0], mimetype=res_data[1])
 
 
+@app.route('/iframe_search/<place>')
+def lagacy_query1(place):
+    return '服务器已升级，请重新加载页面'
+
+
 @app.after_request
 def add_header(response):
     response.cache_control.max_age = 900
