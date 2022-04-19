@@ -210,6 +210,7 @@ def favicon():
 
 
 @app.route('/iframe_search/<place>')
+@app.route('/old/iframe_search/<place>')
 def lagacy_query1(place):
     return '服务器已升级，请重新加载页面'
 
