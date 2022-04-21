@@ -92,7 +92,6 @@ def get_result_html(place):
     return ret
 
 
-UPDATE_DATE = get_updated_date()
 CNT_DATA = init_cnt_data()
 DIST_DATA = init_dist_data()
 RESOURCES_DATA = init_file_data(RESOURCES_DIR)
@@ -103,8 +102,7 @@ def old_root():
     return old_root.PAGE
 
 old_root.PAGE = template_env.get_template('main.html').render(
-    search=True, logo_sameline=True, update_date=UPDATE_DATE,
-    url_prefix='', relative_to_root='.',
+    search=True, logo_sameline=True, url_prefix='', relative_to_root='.',
     switch_notice='。 如网页显示太慢，可以切换至<a href="/">新网页</a>')
 
 
@@ -113,7 +111,7 @@ def root():
     return root.PAGE
 
 root.PAGE = template_env.get_template('main.html').render(
-    search=True, logo_sameline=True, update_date=UPDATE_DATE,
+    search=True, logo_sameline=True,
     url_prefix='https://hankman.github.io/chenfan_info_web_resources',
     relative_to_root='.',
     switch_notice='。 如网页显示不正常，可以切换回<a href="/old/">旧版网页</a>')
@@ -124,8 +122,8 @@ def old_dist_summary():
     return old_dist_summary.PAGE
 
 old_dist_summary.PAGE = template_env.get_template('main.html').render(
-        dist=True, update_date=UPDATE_DATE, infect_table=DIST_DATA,
-        cnt_table=CNT_DATA, url_prefix='', relative_to_root='..'
+        dist=True, infect_table=DIST_DATA, cnt_table=CNT_DATA, url_prefix='',
+        relative_to_root='..'
     ).replace('{title}', '各行政区感染数据统计')
 
 
@@ -134,7 +132,7 @@ def dist_summary():
     return dist_summary.PAGE
 
 dist_summary.PAGE = template_env.get_template('main.html').render(
-        dist=True, update_date=UPDATE_DATE, infect_table=DIST_DATA,
+        dist=True, infect_table=DIST_DATA,
         cnt_table=CNT_DATA,
         url_prefix='https://hankman.github.io/chenfan_info_web_resources',
         relative_to_root='..'
@@ -177,7 +175,7 @@ def old_search_page(place):
 
 old_search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
     long_search=True, extra_notice="，将本页发送到桌面以快速查询",
-    update_date=UPDATE_DATE, url_prefix='', relative_to_root='..')
+    url_prefix='', relative_to_root='..')
 
 
 @app.route('/search/<place>')
@@ -186,7 +184,6 @@ def search_page(place):
 
 search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
     long_search=True, extra_notice="，将本页发送到桌面以快速查询",
-    update_date=UPDATE_DATE,
     url_prefix='https://hankman.github.io/chenfan_info_web_resources',
     relative_to_root='..')
 
@@ -213,6 +210,12 @@ def favicon():
 @app.route('/old/iframe_search/<place>')
 def lagacy_query1(place):
     return '服务器已升级，请重新加载页面'
+
+
+@app.route('/update_date/')
+@app.route('/old/update_date/')
+def update_date():
+    return get_updated_date()
 
 
 @app.after_request

@@ -29,7 +29,7 @@
                 {% if search %}
                 {% include 'search-box.html' %}
                 {% else %}
-                <div class="update-date">数据更新至：<a href="{{ relative_to_root }}/dist/">{{ update_date }}</a></div>
+                <div class="update-date">数据更新至：<a class="date-link" href="{{ relative_to_root }}/dist/"></a></div>
                 {% endif %}
             </div>
 
@@ -55,5 +55,7 @@
             <div><a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2022007631号-1|©2022 chenfan.info 版权所有</a>
             </div>
         </div>
+
+        <script src="{{ url_prefix }}/resources/update_date.js"></script>
     </body>
 </html>
