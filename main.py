@@ -157,7 +157,7 @@ def query_data(place):
     return get_result_html(place)
 
 
-@app.route('/debug')
+@app.route('/data_processing')
 def debug_page():
     with open(DEBUG_FILE, 'rb') as f:
         return f.read()
