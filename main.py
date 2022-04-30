@@ -103,7 +103,7 @@ def old_root():
 
 old_root.PAGE = template_env.get_template('main.html').render(
     search=True, logo_sameline=True, url_prefix='', relative_to_root='.',
-    switch_notice='。 如网页显示太慢，可以切换至<a href="/">新网页</a>')
+    switch_notice='。 切换至<a href="/">新网页</a>')
 
 
 @app.route('/')
@@ -114,7 +114,7 @@ root.PAGE = template_env.get_template('main.html').render(
     search=True, logo_sameline=True,
     url_prefix='https://hankman.github.io/chenfan_info_web_resources',
     relative_to_root='.',
-    switch_notice='。 如网页显示不正常，可以切换回<a href="/old/">旧版网页</a>')
+    switch_notice='。 切换回<a href="/old/">旧版网页</a>')
 
 
 @app.route('/old/dist/')
@@ -208,17 +208,20 @@ def favicon():
 
 @app.route('/iframe_search/<place>')
 @app.route('/old/iframe_search/<place>')
-def lagacy_query1(place):
+def legacy_query1(place):
     return '服务器已升级，请重新加载页面'
 
 
 @app.route('/update_date/')
 @app.route('/old/update_date/')
 def update_date():
-    return get_updated_date()
+    response = Response(get_updated_date())
+    response.cache_control.no_cache = True;
+    return response
 
 
 @app.after_request
 def add_header(response):
-    response.cache_control.max_age = 300
+    if 'Cache-Control' not in response.headers:
+        response.cache_control.max_age = 300
     return response
