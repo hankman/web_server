@@ -19,6 +19,8 @@ RESOURCES_DIR = server_conf['RESOURCES_DIR']
 DATA_FILE = os.path.join(DATA_DIR, 'infect.pickle')
 CNT_FILE = os.path.join(DATA_DIR, 'cnt.pickle')
 DEBUG_FILE = os.path.join(DATA_DIR, 'grab_infect_data.html')
+BJ_DEBUG_FILE = os.path.join(DATA_DIR, 'grab_beijing_data.html')
+
 
 REDIS = redis.Redis(host='localhost', port=6379, db=0)
 BJ_REDIS = redis.Redis(host='localhost', port=6379, db=1)
@@ -229,6 +231,12 @@ def bj_query_data(place):
 @app.route('/data_processing')
 def debug_page():
     with open(DEBUG_FILE, 'rb') as f:
+        return f.read()
+
+
+@app.route('/data_processing_beijing')
+def beijing_debug_page():
+    with open(BJ_DEBUG_FILE, 'rb') as f:
         return f.read()
 
 
