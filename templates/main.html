@@ -7,6 +7,11 @@
         <link rel=”apple-touch-icon-precomposed” type="image/png" href="{{ url_prefix }}/resources/apple-touch-icon.png">
         <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/main.css">
         <link rel="stylesheet" type="text/css" href="{{ url_prefix }}/resources/table.css">
+        {% if bj %}
+        <script src="{{ url_prefix }}/resources/get_url_prefix_bj.js"></script>
+        {% else %}
+        <script src="{{ url_prefix }}/resources/get_url_prefix.js"></script>
+        {% endif %}
     </head>
     <body class="flex-vertical">
         <div class="flex-float flex-vertical" id="main">
@@ -37,19 +42,27 @@
             {% if (search or long_search) %}
             <div class="notice emphasize">*解封剩余: 解封剩余和三区划分均为推测值，具体政策请咨询当地防疫机构。</div>
             <div id="long-search-table" class="flex-float flex-vertical">
-                <div class="table-content flex-vertical extra-header-table" id="data-div"></div>
+                <div class="table-content flex-vertical" id="data-div"></div>
             </div>
-                {% if search %}
-                <script src="{{ url_prefix }}/resources/create_table.js"></script>
-                <script src="{{ url_prefix }}/resources/search.js"></script>
+                {% if bj %}
+                <script src="{{ url_prefix }}/resources/bj_create_table.js"></script>
                 {% else %}
                 <script src="{{ url_prefix }}/resources/create_table.js"></script>
+                {% endif %}
+
+                {% if search %}
+                <script src="{{ url_prefix }}/resources/search.js"></script>
+                {% else %}
                 <script src="{{ url_prefix }}/resources/long_search.js"></script>
                 {% endif %}
             {% endif %}
 
             {% if dist %}
-            {% include 'dist-table.html' %}
+                {% if bj%}
+                    {% include 'bj-dist-table.html' %}
+                {% else %}
+                    {% include 'dist-table.html' %}
+                {% endif %}
             {% endif %}
         </div>
         <div id="foot">
