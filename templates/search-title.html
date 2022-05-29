@@ -3,5 +3,6 @@
         <a href="{{ relative_to_root }}/" id="search-title-logo">
             <img src="{{ url_prefix }}/resources/logo.jpg" alt="logo" id="main-logo" class='single-line-float'>
         </a><div class="single-line-center">查询感染记录</div>
+        <a href="{% if not bj %}/bj/{% else %}/{% endif %}{% if not url_prefix %}old/{% endif %}" id="domain-switch" class="single-line-float">{% if bj %}北京{% else %}上海{% endif %}</a>
     </h1>
 </div>
