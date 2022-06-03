@@ -277,7 +277,7 @@ search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
 
 @app.route('/bj/search/<place>')
 def bj_search_page(place):
-    return search_page.PAGE_TEMPLATE
+    return bj_search_page.PAGE_TEMPLATE
 
 bj_search_page.PAGE_TEMPLATE = template_env.get_template('main.html').render(
     long_search=True, extra_notice="，将本页发送到桌面以快速查询",
