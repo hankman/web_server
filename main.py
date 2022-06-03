@@ -45,8 +45,8 @@ def init_dist_data():
     return REDIS.get('dist_summary').decode('utf8')
 
 
-def init_gj_data():
-    return REDIS.get('gj_summary').decode('utf8')
+def init_daily_data():
+    return REDIS.get('daily_summary').decode('utf8')
 
 
 def init_bj_dist_data():
@@ -112,7 +112,7 @@ def bj_get_result_html(place):
 
 CNT_DATA = init_cnt_data()
 DIST_DATA = init_dist_data()
-GJ_DATA = init_gj_data()
+DAILY_DATA = init_daily_data()
 RESOURCES_DATA = init_file_data(RESOURCES_DIR)
 BJ_DIST_DATA = init_bj_dist_data()
 
@@ -163,7 +163,7 @@ def old_dist_summary():
     return old_dist_summary.PAGE
 
 old_dist_summary.PAGE = template_env.get_template('main.html').render(
-        dist=True, infect_table=DIST_DATA, cnt_table=CNT_DATA, gj_table=GJ_DATA,
+        dist=True, infect_table=DIST_DATA, cnt_table=CNT_DATA, daily_table=DAILY_DATA,
         url_prefix='', relative_to_root='..'
     ).replace('{title}', '各行政区感染数据统计')
 
@@ -175,7 +175,7 @@ def dist_summary():
 dist_summary.PAGE = template_env.get_template('main.html').render(
         dist=True, infect_table=DIST_DATA,
         cnt_table=CNT_DATA,
-        gj_table=GJ_DATA,
+        daily_table=DAILY_DATA,
         url_prefix='https://hankman.github.io/chenfan_info_web_resources',
         relative_to_root='..'
     ).replace('{title}', '各行政区感染数据统计')
