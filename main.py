@@ -53,6 +53,10 @@ def init_bj_dist_data():
     return BJ_REDIS.get('dist_summary').decode('utf8')
 
 
+def init_bj_inf_data():
+    return BJ_REDIS.get('daily_inf').decode('utf8')
+
+
 def get_file_mime_type(file):
     mimetype = 'text/html'
     if file.endswith('.ico'):
@@ -115,6 +119,7 @@ DIST_DATA = init_dist_data()
 DAILY_DATA = init_daily_data()
 RESOURCES_DATA = init_file_data(RESOURCES_DIR)
 BJ_DIST_DATA = init_bj_dist_data()
+BJ_INF_DATA = init_bj_inf_data()
 
 
 @app.route('/old/')
@@ -186,7 +191,7 @@ def bj_old_dist_summary():
     return bj_old_dist_summary.PAGE
 
 bj_old_dist_summary.PAGE = template_env.get_template('main.html').render(
-        dist=True, dist_table=BJ_DIST_DATA,
+        dist=True, dist_table=BJ_DIST_DATA, bj_daily_inf=BJ_INF_DATA,
         url_prefix='', relative_to_root='..', bj=True
     ).replace('{title}', '各行政区感染数据统计')
 
@@ -198,6 +203,7 @@ def bj_dist_summary():
 bj_dist_summary.PAGE = template_env.get_template('main.html').render(
         dist=True,
         dist_table=BJ_DIST_DATA,
+        bj_daily_inf=BJ_INF_DATA,
         url_prefix='https://hankman.github.io/chenfan_info_web_resources',
         relative_to_root='..',
         bj=True
